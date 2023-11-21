@@ -1,0 +1,45 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+
+h1 {
+    text-align: center;
+}
+
+input, select, button {
+    padding: 5px;
+    margin: 10px;
+}
+
+#publisher {
+    width: 200px; 
+}
+
+#existingLists{
+    width: 200px;
+}
+
+.superhero-container {
+    margin-top: 20px;
+    border: 2px solid #000000; 
+    background-color: #a1a3a5; 
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.superhero-info {
+    margin-top: 20px;
+    border: 2px solid #4CAF50; 
+    background-color: #a8cff1; 
+    padding: 10px;
+    border-radius: 10px;
+}
+.superhero-powers {
+    margin-top: 20px;
+    border: 2px solid #ce2626; 
+    background-color: #f0f8ff; 
+    padding: 10px;
+    border-radius: 10px;
+}
+

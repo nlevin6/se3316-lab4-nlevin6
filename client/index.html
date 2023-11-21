@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Superhero Codex</title>
+    <link rel="stylesheet" type="text/css" href="stylesheet.css">
+</head>
+
+<body>
+    <h1>Superhero Codex</h1>
+    <!--search parameters-->
+    <label for="publisher">Choose Publisher:</label>
+    <select id="publisher"></select>
+    <label for="pattern">Enter Hero Name:</label>
+    <input type="text" id="pattern" placeholder="">
+    <label for="race">Enter Hero Race:</label>
+    <input type="text" id="race" placeholder="">
+    <label for="power">Enter Hero Power:</label>
+    <input type="text" id="power" placeholder="(CASE SENSITIVE)">
+    <label for="limit">Limit Number of Matches:</label>
+    <input type="number" id="limit" min="1">
+    <button id="searchButton">Search</button>
+
+    <!--user created lists section-->
+    <div>
+        <input type="text" id="listName" placeholder="Enter List Name">
+        <button onclick="createList()">Create List</button>
+        <select id="existingLists" onchange="displaySelectedList()"></select>
+            <!--delete list button-->
+    <button onclick="deleteSelectedList()">Delete List</button>
+    </div>
+    <div id="selectedSuperheroesList"></div>
+    
+
+
+
+
+    <div id="superheroesList"></div>
+
+    <div id="searchResults"></div>
+    <script src="script.js"></script>
+</body>
+
+</html>
