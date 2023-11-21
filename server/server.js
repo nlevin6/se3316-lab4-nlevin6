@@ -20,10 +20,10 @@ fs.readFile(superheroInfoPath, 'utf8', (err, data) => {
 });
 
 //set up serving front-end code
-app.use(express.static(path.join(__dirname, '../client')));
+app.use(express.static(path.join(__dirname, '../client/build')));
 
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client', 'index.html'));
+    res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
 });
 
 //middleware to do logging
@@ -41,7 +41,7 @@ app.get('/superhero/', (req, res) => {
     fs.readFile(superheroInfoPath, 'utf8', (err, data) => {
         if (err) {
             console.error('Error reading superhero_info.json file: ', err);
-            res.status(500).json({ error: 'Error reading superhero_info.json file' });
+            res.status(500).json({error: 'Error reading superhero_info.json file'});
             return;
         }
         try {
@@ -53,11 +53,11 @@ app.get('/superhero/', (req, res) => {
             if (superhero) {
                 res.json(superhero); //send superhero information as JSON response
             } else {
-                res.status(404).json({ message: 'Superhero not found' });
+                res.status(404).json({message: 'Superhero not found'});
             }
         } catch (error) {
             console.error('Error parsing superhero_info.json:', error);
-            res.status(500).json({ error: 'Error parsing superhero_info.json' });
+            res.status(500).json({error: 'Error parsing superhero_info.json'});
         }
     });
 });
@@ -70,13 +70,13 @@ app.get('/superhero/:id/powers', (req, res) => {
     fs.readFile(superheroInfoPath, 'utf8', (err, infoData) => {
         if (err) {
             console.error('Error reading superhero_info.json file: ', err);
-            res.status(500).json({ error: 'Error reading superhero_info.json file' });
+            res.status(500).json({error: 'Error reading superhero_info.json file'});
             return;
         }
         fs.readFile(superheroPowersPath, 'utf8', (err, powersData) => {
             if (err) {
                 console.error('Error reading superhero_powers.json file: ', err);
-                res.status(500).json({ error: 'Error reading superhero_powers.json file' });
+                res.status(500).json({error: 'Error reading superhero_powers.json file'});
                 return;
             }
 
@@ -94,14 +94,14 @@ app.get('/superhero/:id/powers', (req, res) => {
                     if (superheroPowers) {
                         res.json(superheroPowers); // Send superhero powers as a JSON response
                     } else {
-                        res.status(404).json({ message: 'Superhero powers not found' });
+                        res.status(404).json({message: 'Superhero powers not found'});
                     }
                 } else {
-                    res.status(404).json({ message: 'Superhero not found' });
+                    res.status(404).json({message: 'Superhero not found'});
                 }
             } catch (error) {
                 console.error('Error parsing JSON:', error);
-                res.status(500).json({ error: 'Error parsing JSON' });
+                res.status(500).json({error: 'Error parsing JSON'});
             }
         });
     });
@@ -112,24 +112,24 @@ app.get('/publishers', (req, res) => {
     fs.readFile(superheroInfoPath, 'utf8', (err, data) => {
         if (err) {
             console.error('Error reading superhero_info.json file: ', err);
-            res.status(500).json({ error: 'Error reading superhero_info.json file' });
+            res.status(500).json({error: 'Error reading superhero_info.json file'});
             return;
         }
         try {
             const heroes = JSON.parse(data);
             const publisherNames = [...new Set(heroes.map(hero => hero.Publisher))];
 
-            res.json({ publishers: publisherNames });
+            res.json({publishers: publisherNames});
         } catch (error) {
             console.error('Error parsing superhero_info.json:', error);
-            res.status(500).json({ error: 'Error parsing superhero_info.json' });
+            res.status(500).json({error: 'Error parsing superhero_info.json'});
         }
     });
 });
 
 //get the first n number of matching superhero IDs for a given search pattern matching a given information field
 app.get('/superhero/search', (req, res) => {
-    const { publisher, name, n, race, power } = req.query;
+    const {publisher, name, n, race, power} = req.query;
 
     let filteredHeroes = superheroData.filter(hero => {
         const byPublisher = (publisher && publisher !== 'All') ? hero.Publisher.toLowerCase() === publisher.toLowerCase() : true;
@@ -149,104 +149,104 @@ app.get('/superhero/search', (req, res) => {
     });
 
     if (filteredHeroes.length === 0) {
-        res.status(404).json({ message: 'No matching superheroes found' });
+        res.status(404).json({message: 'No matching superheroes found'});
     } else {
         let result = filteredHeroes;
         if (n && parseInt(n) > 0) {
             result = filteredHeroes.slice(0, parseInt(n));
         }
-        res.json({ matchingSuperheroes: result });
+        res.json({matchingSuperheroes: result});
     }
 });
 
 app.get('/superhero-lists', (req, res) => {
-    res.json({ lists: superheroLists });
+    res.json({lists: superheroLists});
 });
 
 //request to create a new superhero list (POST)
 app.post('/superhero-lists', (req, res) => {
-    const { listName } = req.body; //get list name from request body
-    
+    const {listName} = req.body; //get list name from request body
+
     const listExists = checkIfListExists(listName);
 
     if (listExists) {
-        return res.status(400).json({ error: 'List name already exists' });
+        return res.status(400).json({error: 'List name already exists'});
     }
 
     saveSuperheroList(listName);
 
-    res.status(200).json({ message: 'Superhero list created successfully' });
+    res.status(200).json({message: 'Superhero list created successfully'});
 });
 
 function checkIfListExists(listName) {
-  return superheroLists.some(list => list.name === listName);
+    return superheroLists.some(list => list.name === listName);
 }
 
 function saveSuperheroList(listName) {
-  if (checkIfListExists(listName)) {
-    throw new Error('List name already exists');
-  }
+    if (checkIfListExists(listName)) {
+        throw new Error('List name already exists');
+    }
 
-  //save the list
-  superheroLists.push({ name: listName });
+    //save the list
+    superheroLists.push({name: listName});
 }
 
 function saveSuperheroList(listName, superhero) {
     //check if the list already exists
     const existingList = superheroLists.find(list => list.name === listName);
-  
+
     if (existingList) {
-      existingList.superheroes.push(superhero);
+        existingList.superheroes.push(superhero);
     } else {
-      //create a new list with the superhero
-      superheroLists.push({ name: listName, superheroes: [superhero] });
+        //create a new list with the superhero
+        superheroLists.push({name: listName, superheroes: [superhero]});
     }
-  }
-  
-  //update the list with a superhero (POST or PUT)
-  app.put('/add-to-list', (req, res) => {
-    const { superhero, listName } = req.body;
-  
+}
+
+//update the list with a superhero (POST or PUT)
+app.put('/add-to-list', (req, res) => {
+    const {superhero, listName} = req.body;
+
     const selectedList = superheroLists.find(list => list.name === listName);
-  
+
     if (selectedList) {
-      //update the list with the new superhero
-      saveSuperheroList(listName, superhero);
-  
-      res.status(200).json({ message: `${superhero} added to ${listName} successfully` });
+        //update the list with the new superhero
+        saveSuperheroList(listName, superhero);
+
+        res.status(200).json({message: `${superhero} added to ${listName} successfully`});
     } else {
-      res.status(404).json({ error: 'List not found' });
+        res.status(404).json({error: 'List not found'});
     }
-  });
-  
-  //fetch superheroes in a selected list
-  app.get('/fetch-superheroes-in-list', (req, res) => {
-    const { listName } = req.query;
-  
+});
+
+//fetch superheroes in a selected list
+app.get('/fetch-superheroes-in-list', (req, res) => {
+    const {listName} = req.query;
+
     if (listName) {
-      const selectedList = superheroLists.find(list => list.name === listName);
-  
-      if (selectedList) {
-        const superheroes = selectedList.superheroes || [];
-        res.status(200).json({ superheroes });
-      } else {
-        res.status(404).json({ error: 'List not found' });
-      }
+        const selectedList = superheroLists.find(list => list.name === listName);
+
+        if (selectedList) {
+            const superheroes = selectedList.superheroes || [];
+            res.status(200).json({superheroes});
+        } else {
+            res.status(404).json({error: 'List not found'});
+        }
     } else {
-      res.status(400).json({ error: 'List name not provided' });
+        res.status(400).json({error: 'List name not provided'});
     }
-  });
+});
 
 //delete a list of superheroes with a given name
 app.delete('/superhero-lists/:listName', (req, res) => {
-    const { listName } = req.params;
+    const {listName} = req.params;
     const listIndex = superheroLists.findIndex(list => list.name === listName);
 
     if (listIndex !== -1) {
         superheroLists.splice(listIndex, 1);
-        res.status(200).json({ message: `List "${listName}" and its contents deleted successfully` });
+        res.status(200).json({message: `List "${listName}" and its contents deleted successfully`});
     } else {
-        res.status(404).json({ error: `List "${listName}" doesn't exist` });
+        res.status(404).json({error: `List "${listName}" doesn't exist`});
     }
 });
 
