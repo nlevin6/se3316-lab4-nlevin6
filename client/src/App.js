@@ -1,28 +1,18 @@
-import React, {useState} from 'react';
-import SearchForm from '../src/components/SearchForm.js';
-import SearchResults from '../src/components/SearchResults.js';
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import AboutPage from './AboutPage';
+import LoginPage from './LoginPage';
+import SuperheroSearchPage from './SuperheroSearchPage';
 
 const App = () => {
-    const [searchResults, setSearchResults] = useState([]);
-
-    const handleSearch = async (searchParams) => {
-        try {
-            const response = await fetch(`/superhero/search?${new URLSearchParams(searchParams)}`);
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            const data = await response.json();
-            setSearchResults(data.matchingSuperheroes || []);
-        } catch (error) {
-            console.error('Error fetching search results:', error);
-        }
-    };
-
     return (
-        <div>
-            <SearchForm onSearch={handleSearch}/>
-            <SearchResults results={searchResults}/>
-        </div>
+        <Router>
+            <Routes>
+                <Route path="/" element={<AboutPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/superhero-search" element={<SuperheroSearchPage />} />
+            </Routes>
+        </Router>
     );
 };
 
