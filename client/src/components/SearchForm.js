@@ -22,21 +22,21 @@ const SearchForm = ({ onSearch }) => {
         <form onSubmit={handleSubmit}>
             <label>
                 Name:
-                <input type="text" name="name" value={searchParams.name} onChange={handleInputChange} />
+                <input className="border rounded py-2 px-3" type="text" name="name" value={searchParams.name} onChange={handleInputChange} />
             </label>
             <label>
                 Power:
-                <input type="text" name="power" value={searchParams.power} onChange={handleInputChange} />
+                <input className="border rounded py-2 px-3" type="text" name="power" value={searchParams.power} onChange={handleInputChange} />
             </label>
             <label>
                 Race:
-                <input type="text" name="race" value={searchParams.race} onChange={handleInputChange} />
+                <input className="border rounded py-2 px-3" type="text" name="race" value={searchParams.race} onChange={handleInputChange} />
             </label>
             <label>
                 Number of Searches:
-                <input type="number" name="n" value={searchParams.n} onChange={handleInputChange} />
+                <input className="border rounded py-2 px-3" type="number" name="n" value={searchParams.n} onChange={handleInputChange} />
             </label>
-            <button type="submit">Search</button>
+            <button type="submit" className="bg-blue-500 text-white py-2 px-4 rounded mb-2">Search</button>
         </form>
     );
 };
