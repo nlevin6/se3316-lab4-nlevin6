@@ -93,7 +93,7 @@ app.get('/superhero/:id/powers', (req, res) => {
                     const superheroPowers = heroPowers.find(hero => hero.hero_names === superhero.name);
 
                     if (superheroPowers) {
-                        res.json(superheroPowers); // Send superhero powers as a JSON response
+                        res.json(superheroPowers); // Send entire superheroPowers object
                     } else {
                         res.status(404).json({message: 'Superhero powers not found'});
                     }
@@ -107,6 +107,7 @@ app.get('/superhero/:id/powers', (req, res) => {
         });
     });
 });
+
 
 //get publishers
 app.get('/publishers', (req, res) => {
@@ -155,10 +156,23 @@ app.get('/superhero/search', (req, res) => {
     if (filteredHeroes.length === 0) {
         res.status(404).json({message: 'No matching superheroes found'});
     } else {
-        let result = filteredHeroes.map(hero => ({name: hero.name, publisher: hero.Publisher}));
-        if (n && parseInt(n) > 0) {
-            result = result.slice(0, parseInt(n));
-        }
+        const result = filteredHeroes.map(hero => ({
+            id: hero.id,
+            name: hero.name,
+            Gender: hero.Gender,
+            'Eye color': hero['Eye color'],
+            Race: hero.Race,
+            'Hair color': hero['Hair color'],
+            Height: hero.Height,
+            Publisher: hero.Publisher,
+            'Skin color': hero['Skin color'],
+            Alignment: hero.Alignment,
+            Weight: hero.Weight
+        }));
+
+        // if (n && parseInt(n) > 0) {
+        //     result = result.slice(0, parseInt(n));
+        // }
         res.json({matchingSuperheroes: result});
 
     }

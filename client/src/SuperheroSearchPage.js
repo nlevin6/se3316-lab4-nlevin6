@@ -17,16 +17,17 @@ const SuperheroSearchPage = () => {
             if (data.matchingSuperheroes && data.matchingSuperheroes.length > 0) {
                 setSearchResults(data.matchingSuperheroes);
             } else {
-                //no results found
+                // no results found
                 setSearchResults([]);
             }
         } catch (error) {
             console.error('Error fetching search results:', error);
 
-            //set state to indicate no results due to network error
+            // set state to indicate no results due to network error
             setSearchResults([]);
         }
     };
+
     //redirect to the login page
     const handleLogout = () => {
         window.location.href = '/login';
