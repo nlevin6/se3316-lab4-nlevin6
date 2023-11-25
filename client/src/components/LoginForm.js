@@ -8,6 +8,10 @@ const LoginForm = () => {
         navigate("/superhero-search");
     }
 
+    const handleSignup = () => {
+        navigate("/signup");
+    }
+
     return (
         <div className="text-center">
             <h1 className="text-3xl font-bold mb-6">Login</h1>
@@ -27,7 +31,8 @@ const LoginForm = () => {
                     Login
                 </button>
 
-                <button type="button" className="bg-blue-500 text-white py-2 px-4 rounded mb-2">
+                <button type="button" className="bg-blue-500 text-white py-2 px-4 rounded mb-2"
+                onClick={handleSignup}>
                     Sign Up
                 </button>
 
