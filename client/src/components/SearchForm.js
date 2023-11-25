@@ -5,15 +5,15 @@ const SearchForm = ({onSearch}) => {
         name: '',
         power: '',
         race: '',
-        publisher: '', // Changed from 'n' to 'publisher'
+        publisher: '',
     });
 
     const [publishers, setPublishers] = useState([]);
 
     useEffect(() => {
-        fetch('/publishers')
+        fetch('http://localhost:3000/publishers')
             .then(response => response.json())
-            .then(data => setPublishers(data.publishers))
+            .then(data => setPublishers(data.publishers.sort()))
             .catch(error => console.error('Error fetching publishers:', error));
     }, []);
 

@@ -2,6 +2,7 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const app = express();
+const cors = require('cors');
 const port = 3000;
 const bodyParser = require('body-parser');
 
@@ -18,13 +19,13 @@ fs.readFile(superheroInfoPath, 'utf8', (err, data) => {
     }
     superheroData = JSON.parse(data);
 });
-
-//set up serving front-end code
+app.use(cors({origin: '*'}));
 app.use(express.static(path.join(__dirname, '../client/build')));
 
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
-});
+// app.get('*', (req, res) => {
+//     res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
+// });
+
 
 //middleware to do logging
 app.use((req, res, next) => {
@@ -130,6 +131,7 @@ app.get('/publishers', (req, res) => {
 //get the first n number of matching superhero IDs for a given search pattern matching a given information field
 app.get('/superhero/search', (req, res) => {
     const {publisher, name, n, race, power} = req.query;
+    console.log('Received search request with parameters:', req.query);
 
     let filteredHeroes = superheroData.filter(hero => {
         const byPublisher = (publisher && publisher !== 'All') ? hero.Publisher.toLowerCase() === publisher.toLowerCase() : true;
@@ -148,14 +150,17 @@ app.get('/superhero/search', (req, res) => {
         return byPublisher && byName && byRace && byPower;
     });
 
+    console.log('Filtered superheroes:', filteredHeroes);
+
     if (filteredHeroes.length === 0) {
         res.status(404).json({message: 'No matching superheroes found'});
     } else {
-        let result = filteredHeroes;
+        let result = filteredHeroes.map(hero => ({name: hero.name, publisher: hero.Publisher}));
         if (n && parseInt(n) > 0) {
-            result = filteredHeroes.slice(0, parseInt(n));
+            result = result.slice(0, parseInt(n));
         }
         res.json({matchingSuperheroes: result});
+
     }
 });
 
