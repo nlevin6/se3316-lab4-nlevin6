@@ -38,7 +38,7 @@ const SuperheroSearchPage = () => {
                     onClick={handleLogout}>
                 Logout
             </button>
-            <h1 className="text-3xl font-bold mb-6">Superhero Search</h1>
+            <h1 className="text-3xl font-bold mb-6">Superhero Codex</h1>
             <SearchForm onSearch={handleSearch}/>
             <SearchResults results={searchResults}/>
         </div>
