@@ -13,7 +13,7 @@ const SearchForm = ({onSearch}) => {
     useEffect(() => {
         fetch('/publishers')
             .then(response => response.json())
-            .then(data => setPublishers(data))
+            .then(data => setPublishers(data.publishers))
             .catch(error => console.error('Error fetching publishers:', error));
     }, []);
 
