@@ -17,12 +17,12 @@ const LoginForm = () => {
             <h1 className="text-3xl font-bold mb-6">Login</h1>
 
             <form className="flex flex-col items-center justify-center">
-                <div className="mb-4">
+                <div className="mb-4 flex items-center">
                     <label htmlFor="username" className="mb-2">Username:</label>
                     <input type="text" id="username" name="username" className="border rounded py-2 px-3"/>
                 </div>
 
-                <div className="mb-4">
+                <div className="mb-4 flex items-center">
                     <label htmlFor="password" className="mb-2">Password:</label>
                     <input type="password" id="password" name="password" className="border rounded py-2 px-3"/>
                 </div>
