@@ -34,7 +34,7 @@ const SignupForm = () => {
             if (user) {
                 await sendEmailVerification(user);
 
-                // JWT token retrieval
+                //JWT retrieval
                 const token = await user.getIdToken();
                 console.log('JWT Token:', token);
                 alert('Registration successful. Please check your email for verification.');

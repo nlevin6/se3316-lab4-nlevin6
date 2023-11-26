@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 import SearchForm from "./components/SearchForm";
 import SearchResults from "./components/SearchResults";
+import CreateList from "./components/CreateList";
 
 const SuperheroSearchPage = () => {
     const [searchResults, setSearchResults] = useState([]);
@@ -40,6 +41,7 @@ const SuperheroSearchPage = () => {
                 Logout
             </button>
             <h1 className="text-3xl font-bold mb-6">Superhero Codex</h1>
+            <CreateList/>
             <SearchForm onSearch={handleSearch}/>
             <SearchResults results={searchResults}/>
         </div>

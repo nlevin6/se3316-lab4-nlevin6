@@ -5,6 +5,7 @@ const app = express();
 const cors = require('cors');
 const port = 3000;
 const bodyParser = require('body-parser');
+const admin = require('firebase-admin');
 
 const superheroInfoPath = path.join(__dirname, 'superhero_info.json');
 const superheroPowersPath = path.join(__dirname, 'superhero_powers.json');
@@ -22,9 +23,51 @@ fs.readFile(superheroInfoPath, 'utf8', (err, data) => {
 app.use(cors({origin: '*'}));
 app.use(express.static(path.join(__dirname, '../client/build')));
 
-// app.get('*', (req, res) => {
-//     res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
-// });
+// Initialize Firebase Admin SDK with service account key
+const serviceAccount = require(path.join(__dirname, 'se3316-lab4-nlevin6-firebase-adminsdk-8ji0u-aa1c085f26.json'));
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+});
+
+// Function to decode and verify Firebase JWT token
+const decodeUserFromToken = (token) => {
+    return new Promise((resolve, reject) => {
+        if (!token) {
+            reject('No token provided');
+            return;
+        }
+
+        admin.auth().verifyIdToken(token)
+            .then((decodedToken) => {
+                resolve(decodedToken);
+            })
+            .catch((error) => {
+                reject('Invalid token: ' + error.message);
+            });
+    });
+};
+
+module.exports = {
+    decodeUserFromToken,
+};
+
+// Middleware to extract user information from the JWT token
+const extractUserFromToken = async (req, res, next) => {
+    let token = req.headers.authorization;
+    if( req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+        token = req.headers.authorization.split(' ')[1]
+    }
+    console.log('Received Token:', token);
+    try {
+        const user = await decodeUserFromToken(token);
+        console.log('Decoded user:', user);
+        req.user = user;
+        next();
+    } catch (error) {
+        console.error('Error decoding token:', error);
+        res.status(401).json({ error: 'Unauthorized' });
+    }
+};
 
 
 //middleware to do logging
@@ -182,44 +225,35 @@ app.get('/superhero-lists', (req, res) => {
     res.json({lists: superheroLists});
 });
 
-//request to create a new superhero list (POST)
-app.post('/superhero-lists', (req, res) => {
-    const {listName} = req.body; //get list name from request body
+// POST endpoint to create a superhero list
+app.post('/superhero-lists', extractUserFromToken, (req, res) => {
+    const { listName, description, visibility } = req.body;
+    const { userId } = req.user;
 
-    const listExists = checkIfListExists(listName);
+    const listExists = checkIfListExists(listName, userId);
 
     if (listExists) {
-        return res.status(400).json({error: 'List name already exists'});
+        return res.status(400).json({ error: 'List name already exists' });
     }
 
-    saveSuperheroList(listName);
+    saveSuperheroList(listName, description, visibility, userId);
 
-    res.status(200).json({message: 'Superhero list created successfully'});
+    res.status(200).json({ message: 'Superhero list created successfully' });
 });
 
-function checkIfListExists(listName) {
-    return superheroLists.some(list => list.name === listName);
-}
-
-function saveSuperheroList(listName) {
-    if (checkIfListExists(listName)) {
+// Update saveSuperheroList function to include userId
+function saveSuperheroList(listName, description, visibility, userId) {
+    if (checkIfListExists(listName, userId)) {
         throw new Error('List name already exists');
     }
 
-    //save the list
-    superheroLists.push({name: listName});
+    // Save the list with userId
+    superheroLists.push({ userId, name: listName, description, visibility, superheroes: [] });
 }
 
-function saveSuperheroList(listName, superhero) {
-    //check if the list already exists
-    const existingList = superheroLists.find(list => list.name === listName);
-
-    if (existingList) {
-        existingList.superheroes.push(superhero);
-    } else {
-        //create a new list with the superhero
-        superheroLists.push({name: listName, superheroes: [superhero]});
-    }
+// Update checkIfListExists function to include userId
+function checkIfListExists(listName, userId) {
+    return superheroLists.some((list) => list.name === listName && list.userId === userId);
 }
 
 //update the list with a superhero (POST or PUT)
