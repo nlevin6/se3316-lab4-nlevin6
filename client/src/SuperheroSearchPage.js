@@ -1,10 +1,22 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
+import {getAuth, onAuthStateChanged, signOut} from 'firebase/auth';
 import SearchForm from "./components/SearchForm";
 import SearchResults from "./components/SearchResults";
 import CreateList from "./components/CreateList";
 
 const SuperheroSearchPage = () => {
     const [searchResults, setSearchResults] = useState([]);
+    const [user, setUser] = useState(null);
+
+    useEffect(() => {
+        const authInstance = getAuth();
+        const unsubscribe = onAuthStateChanged(authInstance, (user) => {
+            setUser(user);
+        });
+        return () => {
+            unsubscribe();
+        };
+    }, []);
 
     const handleSearch = async (searchParams) => {
         console.log("search params: ", searchParams);
@@ -18,20 +30,27 @@ const SuperheroSearchPage = () => {
             if (data.matchingSuperheroes && data.matchingSuperheroes.length > 0) {
                 setSearchResults(data.matchingSuperheroes);
             } else {
-                // no results found
+                //no results found
                 setSearchResults([]);
             }
         } catch (error) {
             console.error('Error fetching search results:', error);
 
-            // set state to indicate no results due to network error
+            //set state to indicate no results due to network error
             setSearchResults([]);
         }
     };
 
-    //redirect to the login page
-    const handleLogout = () => {
-        window.location.href = '/login';
+    const handleLogout = async () => {
+        const authInstance = getAuth();
+
+        try {
+            await signOut(authInstance);
+            // Redirect to the login page after successful logout
+            window.location.href = '/login';
+        } catch (error) {
+            console.error('Error logging out:', error);
+        }
     };
 
     return (

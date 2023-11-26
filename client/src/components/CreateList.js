@@ -69,6 +69,11 @@ const CreateList = () => {
         }
     };
 
+    //if the user is not logged in, don't show the create list form
+    if(!user) {
+        return null;
+    }
+
     return (
         <div className="max-w-md mx-auto p-6 bg-white rounded-md shadow-md">
             <h2 className="text-2xl font-semibold mb-4">Create a New List</h2>
