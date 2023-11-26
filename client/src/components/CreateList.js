@@ -27,13 +27,51 @@ const CreateList = () => {
     }, []);
 
     const handleCreateList = async () => {
-        // Your existing code for handling list creation
-    };
+        if (!listName) {
+            alert('Please enter a list name.');
+            return;
+        }
 
-    if (!user) {
-        // If there's no authenticated user, do not render the component
-        return null;
-    }
+        if (!user) {
+            console.log('User is not authenticated. Unable to create a list.');
+            return;
+        }
+
+        try {
+            const authInstance = getAuth();
+            const tokenResult = await getIdTokenResult(authInstance.currentUser);
+            const token = tokenResult.token;
+
+            // Now you can include the token in your API request headers or send it as needed
+            console.log('Authenticated User. Token:', token);
+            console.log({ listName, description, heroesCollection, visibility });
+
+            // Use the token to make a POST request to your server
+            const response = await fetch('http://localhost:3000/superhero-lists', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    listName,
+                    description,
+                    heroesCollection,
+                    visibility,
+                }),
+            });
+
+            if (response.ok) {
+                console.log('List created successfully.');
+                // Handle success, e.g., redirect the user or update UI
+            } else {
+                console.error('Error creating list:', response.status, response.statusText);
+                // Handle error, e.g., show an error message to the user
+            }
+        } catch (error) {
+            console.error('Error getting user token:', error);
+        }
+    };
 
     return (
         <div className="max-w-md mx-auto p-6 bg-white rounded-md shadow-md">
@@ -48,6 +86,16 @@ const CreateList = () => {
                         type="text"
                         value={listName}
                         onChange={(e) => setListName(e.target.value)}
+                    />
+                </div>
+                <div className="mb-4">
+                    <label className="block text-gray-700 text-sm font-bold mb-2">
+                        Description:
+                    </label>
+                    <textarea
+                        className="w-full px-3 py-2 border rounded-md focus:outline-none focus:border-blue-500"
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
                     />
                 </div>
                 <div className="mb-4">
