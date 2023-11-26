@@ -11,7 +11,6 @@ const CreateList = () => {
     useEffect(() => {
         const authInstance = getAuth();
 
-        // Use Firebase Authentication observer to check the user's authentication status
         const unsubscribe = onAuthStateChanged(authInstance, (user) => {
             if (user) {
                 setUser(user);
@@ -20,7 +19,6 @@ const CreateList = () => {
             }
         });
 
-        // Cleanup function to unsubscribe from the observer when the component unmounts
         return () => {
             unsubscribe();
         };
@@ -42,11 +40,9 @@ const CreateList = () => {
             const tokenResult = await getIdTokenResult(authInstance.currentUser);
             const token = tokenResult.token;
 
-            // Now you can include the token in your API request headers or send it as needed
             console.log('Authenticated User. Token:', token);
             console.log({ listName, description, heroesCollection, visibility });
 
-            // Use the token to make a POST request to your server
             const response = await fetch('http://localhost:3000/superhero-lists', {
                 method: 'POST',
                 headers: {
@@ -63,10 +59,10 @@ const CreateList = () => {
 
             if (response.ok) {
                 console.log('List created successfully.');
-                // Handle success, e.g., redirect the user or update UI
+                //Handle success
             } else {
                 console.error('Error creating list:', response.status, response.statusText);
-                // Handle error, e.g., show an error message to the user
+                //Handle error
             }
         } catch (error) {
             console.error('Error getting user token:', error);
