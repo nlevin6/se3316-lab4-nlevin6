@@ -23,8 +23,10 @@ const LoginForm = () => {
             const user = userCredential.user;
 
             if (user && user.emailVerified) {
+                const token = await user.getIdToken();
+                console.log('JWT Token:', token);
                 alert('Login successful.');
-                navigate("/superhero-search");//probably give them some privilligies here. so they get more features
+                navigate("/superhero-search");//probably give them some privileges here. so they get more features
             } else if (user && !user.emailVerified) {
                 alert('Please verify your email before logging in.');
             }

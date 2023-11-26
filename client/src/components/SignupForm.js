@@ -33,6 +33,10 @@ const SignupForm = () => {
             const user = userCredential.user;
             if (user) {
                 await sendEmailVerification(user);
+
+                // JWT token retrieval
+                const token = await user.getIdToken();
+                console.log('JWT Token:', token);
                 alert('Registration successful. Please check your email for verification.');
             }
         } catch (error) {
