@@ -31,15 +31,10 @@ const SignupForm = () => {
 
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
-
-            // Wait for the user to be authenticated
-            await auth.onAuthStateChanged(async (user) => {
-                if (user) {
-                    // User is authenticated
-                    await sendEmailVerification(auth, user);
-                    alert('Registration successful. Please check your email for verification.');
-                }
-            });
+            if (user) {
+                await sendEmailVerification(user);
+                alert('Registration successful. Please check your email for verification.');
+            }
         } catch (error) {
             alert(error.message);
         }
