@@ -54,8 +54,8 @@ module.exports = {
 // Middleware to extract user information from the JWT token
 const extractUserFromToken = async (req, res, next) => {
     let token = req.headers.authorization;
-    if( req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
-        token = req.headers.authorization.split(' ')[1]
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+        token = req.headers.authorization.split(' ')[1];
     }
     console.log('Received Token:', token);
     try {
@@ -68,6 +68,10 @@ const extractUserFromToken = async (req, res, next) => {
         res.status(401).json({ error: 'Unauthorized' });
     }
 };
+
+
+
+
 
 
 //middleware to do logging
@@ -221,24 +225,29 @@ app.get('/superhero/search', (req, res) => {
     }
 });
 
-app.get('/superhero-lists', (req, res) => {
-    res.json({lists: superheroLists});
+app.get('/superhero-lists', extractUserFromToken, (req, res) => {
+    const {userId} = req.user;
+
+    res.json({lists: superheroLists.map(list => ({...list, userId}))});
+    console.log("userId in GET request: " + userId);
 });
+
 
 // POST endpoint to create a superhero list
 app.post('/superhero-lists', extractUserFromToken, (req, res) => {
-    const { listName, description, visibility } = req.body;
-    const { userId } = req.user;
+    const {listName, description, visibility} = req.body;
+    const {userId} = req.user;
+    console.log("userId in POST request: " + userId);
 
     const listExists = checkIfListExists(listName, userId);
 
     if (listExists) {
-        return res.status(400).json({ error: 'List name already exists' });
+        return res.status(400).json({error: 'List name already exists'});
     }
 
     saveSuperheroList(listName, description, visibility, userId);
 
-    res.status(200).json({ message: 'Superhero list created successfully' });
+    res.status(200).json({message: 'Superhero list created successfully'});
 });
 
 // Update saveSuperheroList function to include userId
@@ -248,8 +257,9 @@ function saveSuperheroList(listName, description, visibility, userId) {
     }
 
     // Save the list with userId
-    superheroLists.push({ userId, name: listName, description, visibility, superheroes: [] });
+    superheroLists.push({userId, name: listName, description, visibility, superheroes: []});
 }
+
 
 // Update checkIfListExists function to include userId
 function checkIfListExists(listName, userId) {
@@ -302,9 +312,6 @@ app.delete('/superhero-lists/:listName', (req, res) => {
         res.status(404).json({error: `List "${listName}" doesn't exist`});
     }
 });
-
-
-
 
 
 //port listen message

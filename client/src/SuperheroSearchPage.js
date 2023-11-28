@@ -3,6 +3,7 @@ import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 import SearchForm from "./components/SearchForm";
 import SearchResults from "./components/SearchResults";
 import CreateList from "./components/CreateList";
+import {Link} from "react-router-dom";
 
 const SuperheroSearchPage = () => {
     const [searchResults, setSearchResults] = useState([]);
@@ -77,6 +78,13 @@ const SuperheroSearchPage = () => {
                     Create List
                 </button>
             )}
+            <Link
+                to="/view-lists"
+                className="bg-green-500 text-white py-2 px-4 rounded mb-2"
+            >
+                View Lists
+            </Link>
+
             {isCreateListOpen && <CreateList onClose={handleCloseCreateList} />}
             <SearchForm onSearch={handleSearch}/>
             <SearchResults results={searchResults}/>

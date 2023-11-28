@@ -37,13 +37,20 @@ const CreateList = ({onClose}) => {
 
         try {
             const authInstance = getAuth();
-            const tokenResult = await getIdTokenResult(authInstance.currentUser);
+            const user = authInstance.currentUser;
+
+            if (!user) {
+                console.log('User is not authenticated. Unable to create a list.');
+                return;
+            }
+
+            const tokenResult = await getIdTokenResult(user);
             const token = tokenResult.token;
 
             console.log('Authenticated User. Token:', token);
             console.log({ listName, description, heroesCollection, visibility });
 
-            const response = await fetch('http://localhost:3000/superhero-lists', {
+            const response = await fetch('/superhero-lists', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -59,10 +66,10 @@ const CreateList = ({onClose}) => {
 
             if (response.ok) {
                 console.log('List created successfully.');
-                //Handle success
+                // Handle success
             } else {
                 console.error('Error creating list:', response.status, response.statusText);
-                //Handle error
+                // Handle error
             }
         } catch (error) {
             console.error('Error getting user token:', error);

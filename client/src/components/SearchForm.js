@@ -11,7 +11,7 @@ const SearchForm = ({onSearch}) => {
     const [publishers, setPublishers] = useState([]);
 
     useEffect(() => {
-        fetch('http://localhost:3000/publishers')
+        fetch('/publishers')
             .then(response => response.json())
             .then(data => setPublishers(data.publishers.sort()))
             .catch(error => console.error('Error fetching publishers:', error));

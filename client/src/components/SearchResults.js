@@ -5,7 +5,7 @@ const SearchResults = ({ results }) => {
 
     const handleExpand = async (superhero) => {
         try {
-            const response = await fetch(`http://localhost:3000/superhero/${superhero.id}/powers`);
+            const response = await fetch(`/superhero/${superhero.id}/powers`);
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
