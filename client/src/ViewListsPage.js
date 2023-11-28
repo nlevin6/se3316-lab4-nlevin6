@@ -1,4 +1,3 @@
-// Import necessary dependencies
 import { useState, useEffect } from 'react';
 import { getAuth } from 'firebase/auth';
 
@@ -39,7 +38,7 @@ const ViewListsPage = () => {
                 method: 'DELETE',
             });
             if (response.ok) {
-                // Update the state to remove the deleted list
+                //update the state to remove the deleted list
                 setLists((prevLists) => prevLists.filter((list) => list.name !== listName));
             } else {
                 console.error('Error deleting list:', response.status, response.statusText);
@@ -51,12 +50,11 @@ const ViewListsPage = () => {
 
 
     const handleGoBack = () => {
-        // Use the browser's history to navigate back
         window.history.back();
     };
 
     const handleEditList = (listName) => {
-        // Implement logic to navigate to the edit page for the list with listName
+        //logic to edit a list here later
     };
 
     return (
@@ -69,15 +67,20 @@ const ViewListsPage = () => {
                 <div key={list.name} className="mb-4">
                     <h2 className="text-xl font-semibold mb-2">{list.name}</h2>
                     <p>{list.description}</p>
-                    {console.log('Visibility:', list.visibility)}
-                    {console.log('User ID:', user && user.uid)}
-                    {console.log('List User ID:', list.userId)}
-                    {console.log('List Name:', list.name)}
-                    {list.visibility === 'private' && user && user.uid === list.userId && (
+                    {list.visibility === 'private' && user && (
                         <div>
-                            {/* Conditionally render delete and edit buttons for private lists */}
-                            <button onClick={() => handleDeleteList(list.name)}>Delete</button>
-                            <button onClick={() => handleEditList(list.name)}>Edit</button>
+                            <button
+                                style={{ backgroundColor: 'red', color: 'white', padding: '8px', marginRight: '4px', borderRadius: '4px', cursor: 'pointer' }}
+                                onClick={() => handleDeleteList(list.name)}
+                            >
+                                Delete
+                            </button>
+                            <button
+                                style={{ backgroundColor: 'blue', color: 'white', padding: '8px', borderRadius: '4px', cursor: 'pointer' }}
+                                onClick={() => handleEditList(list.name)}
+                            >
+                                Edit
+                            </button>
                         </div>
                     )}
                 </div>
