@@ -67,7 +67,7 @@ const ViewListsPage = () => {
                 <div key={list.name} className="mb-4">
                     <h2 className="text-xl font-semibold mb-2">{list.name}</h2>
                     <p>{list.description}</p>
-                    {list.visibility === 'private' && user && (
+                    { user && (
                         <div>
                             <button
                                 style={{ backgroundColor: 'red', color: 'white', padding: '8px', marginRight: '4px', borderRadius: '4px', cursor: 'pointer' }}
