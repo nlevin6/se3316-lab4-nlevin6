@@ -1,5 +1,5 @@
-import React, {useState, useEffect} from 'react';
-import {getAuth, onAuthStateChanged, signOut} from 'firebase/auth';
+import React, { useState, useEffect } from 'react';
+import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 import SearchForm from "./components/SearchForm";
 import SearchResults from "./components/SearchResults";
 import CreateList from "./components/CreateList";
@@ -7,6 +7,7 @@ import CreateList from "./components/CreateList";
 const SuperheroSearchPage = () => {
     const [searchResults, setSearchResults] = useState([]);
     const [user, setUser] = useState(null);
+    const [isCreateListOpen, setIsCreateListOpen] = useState(false);
 
     useEffect(() => {
         const authInstance = getAuth();
@@ -18,10 +19,18 @@ const SuperheroSearchPage = () => {
         };
     }, []);
 
+    const handleOpenCreateList = () => {
+        setIsCreateListOpen(true);
+    };
+
+    const handleCloseCreateList = () => {
+        setIsCreateListOpen(false);
+    };
+
     const handleSearch = async (searchParams) => {
         console.log("search params: ", searchParams);
         try {
-            const response = await fetch(`http://localhost:3000/superhero/search?${new URLSearchParams(searchParams)}`);
+            const response = await fetch(`/superhero/search?${new URLSearchParams(searchParams)}`);
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
@@ -46,7 +55,7 @@ const SuperheroSearchPage = () => {
 
         try {
             await signOut(authInstance);
-            // Redirect to the login page after successful logout
+            //redirect to the login page after successful logout
             window.location.href = '/login';
         } catch (error) {
             console.error('Error logging out:', error);
@@ -60,7 +69,15 @@ const SuperheroSearchPage = () => {
                 Logout
             </button>
             <h1 className="text-3xl font-bold mb-6">Superhero Codex</h1>
-            <CreateList/>
+            {user && (
+                <button
+                    className="bg-blue-500 text-white py-2 px-4 rounded mb-2"
+                    onClick={handleOpenCreateList}
+                >
+                    Create List
+                </button>
+            )}
+            {isCreateListOpen && <CreateList onClose={handleCloseCreateList} />}
             <SearchForm onSearch={handleSearch}/>
             <SearchResults results={searchResults}/>
         </div>
