@@ -9,11 +9,7 @@ const ViewListsPage = () => {
     useEffect(() => {
         const fetchLists = async () => {
             try {
-                const response = await fetch('/superhero-lists', {
-                    headers: {
-                        Authorization: `Bearer ${await authInstance.currentUser.getIdToken()}`,
-                    },
-                });
+                const response = await fetch('/superhero-lists');
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
@@ -24,11 +20,8 @@ const ViewListsPage = () => {
             }
         };
 
-        if (authInstance.currentUser) {
-            fetchLists();
-        }
-    }, [authInstance.currentUser]);
-
+        fetchLists();
+    }, []);
 
     const handleDeleteList = async (listName) => {
         try {
@@ -38,7 +31,7 @@ const ViewListsPage = () => {
                 method: 'DELETE',
             });
             if (response.ok) {
-                //update the state to remove the deleted list
+                // Update the state to remove the deleted list
                 setLists((prevLists) => prevLists.filter((list) => list.name !== listName));
             } else {
                 console.error('Error deleting list:', response.status, response.statusText);
@@ -48,13 +41,12 @@ const ViewListsPage = () => {
         }
     };
 
-
     const handleGoBack = () => {
         window.history.back();
     };
 
     const handleEditList = (listName) => {
-        //logic to edit a list here later
+        // Logic to edit a list here later
     };
 
     return (
@@ -64,26 +56,43 @@ const ViewListsPage = () => {
                 Back
             </button>
             {lists.map((list) => (
-                <div key={list.name} className="mb-4">
-                    <h2 className="text-xl font-semibold mb-2">{list.name}</h2>
-                    <p>{list.description}</p>
-                    { user && (
-                        <div>
-                            <button
-                                style={{ backgroundColor: 'red', color: 'white', padding: '8px', marginRight: '4px', borderRadius: '4px', cursor: 'pointer' }}
-                                onClick={() => handleDeleteList(list.name)}
-                            >
-                                Delete
-                            </button>
-                            <button
-                                style={{ backgroundColor: 'blue', color: 'white', padding: '8px', borderRadius: '4px', cursor: 'pointer' }}
-                                onClick={() => handleEditList(list.name)}
-                            >
-                                Edit
-                            </button>
-                        </div>
-                    )}
-                </div>
+                (list.visibility === 'public' || user) && (
+                    <div key={list.name} className="mb-4">
+                        <h2 className="text-xl font-semibold mb-2">{list.name}</h2>
+                        <p>{list.description}</p>
+
+                        {user && (
+                            <div>
+                                <button
+                                    style={{
+                                        backgroundColor: 'red',
+                                        color: 'white',
+                                        padding: '8px',
+                                        marginRight: '4px',
+                                        borderRadius: '4px',
+                                        cursor: 'pointer'
+                                    }}
+                                    onClick={() => handleDeleteList(list.name)}
+                                >
+                                    Delete
+                                </button>
+                                <button
+                                    style={{
+                                        backgroundColor: 'blue',
+                                        color: 'white',
+                                        padding: '8px',
+                                        borderRadius: '4px',
+                                        cursor: 'pointer'
+                                    }}
+                                    onClick={() => handleEditList(list.name)}
+                                >
+                                    Edit
+                                </button>
+                            </div>
+                        )}
+
+                    </div>
+                )
             ))}
         </div>
     );

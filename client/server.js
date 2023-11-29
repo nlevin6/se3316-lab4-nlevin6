@@ -52,22 +52,34 @@ module.exports = {
 };
 
 // Middleware to extract user information from the JWT token
+// Middleware to extract user information from the JWT token
 const extractUserFromToken = async (req, res, next) => {
     let token = req.headers.authorization;
-    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
-        token = req.headers.authorization.split(' ')[1];
+
+    if (token && token.startsWith('Bearer ')) {
+        token = token.split(' ')[1];
     }
+
     console.log('Received Token:', token);
+
     try {
-        const user = await decodeUserFromToken(token);
-        console.log('Decoded user:', user);
-        req.user = user;
-        next();
+        if (token) {
+            const user = await decodeUserFromToken(token);
+            console.log('Decoded user:', user);
+            req.user = user || {}; // Set to an empty object if user is undefined
+        } else {
+            req.user = {}; // Set to an empty object if there is no token
+        }
     } catch (error) {
         console.error('Error decoding token:', error);
-        res.status(401).json({ error: 'Unauthorized' });
+        req.user = {}; // Set to an empty object if there is an error decoding the token
     }
+
+    next();
 };
+
+
+
 
 
 
