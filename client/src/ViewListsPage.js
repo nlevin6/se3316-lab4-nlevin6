@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getAuth } from 'firebase/auth';
 
 const ViewListsPage = () => {
@@ -31,7 +31,6 @@ const ViewListsPage = () => {
                 method: 'DELETE',
             });
             if (response.ok) {
-                // Update the state to remove the deleted list
                 setLists((prevLists) => prevLists.filter((list) => list.name !== listName));
             } else {
                 console.error('Error deleting list:', response.status, response.statusText);
@@ -60,40 +59,37 @@ const ViewListsPage = () => {
                     <div key={list.name} className="mb-4">
                         <h2 className="text-xl font-semibold mb-2">{list.name}</h2>
                         <p>{list.description}</p>
+                        {list.superheroes && list.superheroes.length > 0 && (
+                            <div>
+                                <h3 className="text-lg font-semibold mt-2">Heroes:</h3>
+                                <ul>
+                                    {list.superheroes.map((hero, index) => (
+                                        <li key={index}>{hero.name} - {hero.Publisher}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
 
                         {user && (
                             <div>
                                 <button
-                                    style={{
-                                        backgroundColor: 'red',
-                                        color: 'white',
-                                        padding: '8px',
-                                        marginRight: '4px',
-                                        borderRadius: '4px',
-                                        cursor: 'pointer'
-                                    }}
+                                    className="bg-red-500 text-white py-2 px-4 rounded mr-2 cursor-pointer"
                                     onClick={() => handleDeleteList(list.name)}
                                 >
                                     Delete
                                 </button>
                                 <button
-                                    style={{
-                                        backgroundColor: 'blue',
-                                        color: 'white',
-                                        padding: '8px',
-                                        borderRadius: '4px',
-                                        cursor: 'pointer'
-                                    }}
+                                    className="bg-blue-500 text-white py-2 px-4 rounded cursor-pointer"
                                     onClick={() => handleEditList(list.name)}
                                 >
                                     Edit
                                 </button>
                             </div>
                         )}
-
                     </div>
                 )
             ))}
+
         </div>
     );
 };

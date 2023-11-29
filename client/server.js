@@ -52,7 +52,6 @@ module.exports = {
 };
 
 // Middleware to extract user information from the JWT token
-// Middleware to extract user information from the JWT token
 const extractUserFromToken = async (req, res, next) => {
     let token = req.headers.authorization;
 
@@ -66,9 +65,9 @@ const extractUserFromToken = async (req, res, next) => {
         if (token) {
             const user = await decodeUserFromToken(token);
             console.log('Decoded user:', user);
-            req.user = user || {}; // Set to an empty object if user is undefined
+            req.user = user || {};
         } else {
-            req.user = {}; // Set to an empty object if there is no token
+            req.user = {};
         }
     } catch (error) {
         console.error('Error decoding token:', error);
@@ -77,14 +76,6 @@ const extractUserFromToken = async (req, res, next) => {
 
     next();
 };
-
-
-
-
-
-
-
-
 
 //middleware to do logging
 app.use((req, res, next) => {
@@ -96,7 +87,7 @@ app.use((req, res, next) => {
 app.use(bodyParser.json());
 
 app.get('/superhero/', (req, res) => {
-    const superheroName = req.query.name; //extract the hero name
+    const superheroName = req.query.name;
 
     fs.readFile(superheroInfoPath, 'utf8', (err, data) => {
         if (err) {
@@ -111,7 +102,7 @@ app.get('/superhero/', (req, res) => {
             const superhero = allHeroes.find(hero => hero.name.toLowerCase() === superheroName.toLowerCase());
 
             if (superhero) {
-                res.json(superhero); //send superhero information as JSON response
+                res.json(superhero);
             } else {
                 res.status(404).json({message: 'Superhero not found'});
             }
@@ -121,6 +112,35 @@ app.get('/superhero/', (req, res) => {
         }
     });
 });
+
+//this one is being used in the createList component
+app.get('/superhero-search', (req, res) => {
+    const { query } = req.query;
+
+    if (!query) {
+        return res.status(400).json({ error: 'Search query is required' });
+    }
+
+    fs.readFile(superheroInfoPath, 'utf8', (err, data) => {
+        if (err) {
+            console.error('Error reading superhero_info.json file: ', err);
+            return res.status(500).json({ error: 'Error reading superhero_info.json file' });
+        }
+
+        try {
+            const allHeroes = JSON.parse(data);
+            const matchingHeroes = allHeroes.filter(hero => hero.name.toLowerCase().includes(query.toLowerCase()));
+
+            //return only name and publisher
+            const searchResults = matchingHeroes.map(hero => ({ name: hero.name, Publisher: hero.Publisher }));
+            res.json(searchResults);
+        } catch (error) {
+            console.error('Error parsing superhero_info.json:', error);
+            res.status(500).json({ error: 'Error parsing superhero_info.json' });
+        }
+    });
+});
+
 
 //ugly json format only
 //USAGE EXAMPLE: http://localhost:3000/superhero/0/powers. Will give powers for hero with id 0
@@ -247,7 +267,7 @@ app.get('/superhero-lists', extractUserFromToken, (req, res) => {
 
 // POST endpoint to create a superhero list
 app.post('/superhero-lists', extractUserFromToken, (req, res) => {
-    const {listName, description, visibility} = req.body;
+    const { listName, description, superheroes, visibility } = req.body;
     const {userId} = req.user;
     console.log("userId in POST request: " + userId);
 
@@ -257,20 +277,29 @@ app.post('/superhero-lists', extractUserFromToken, (req, res) => {
         return res.status(400).json({error: 'List name already exists'});
     }
 
-    saveSuperheroList(listName, description, visibility, userId);
+    saveSuperheroList(listName, description, visibility, userId, superheroes);
 
     res.status(200).json({message: 'Superhero list created successfully'});
 });
 
-// Update saveSuperheroList function to include userId
-function saveSuperheroList(listName, description, visibility, userId) {
+function saveSuperheroList(listName, description, visibility, userId, superheroes) {
     if (checkIfListExists(listName, userId)) {
         throw new Error('List name already exists');
     }
 
-    // Save the list with userId
-    superheroLists.push({userId, name: listName, description, visibility, superheroes: []});
+    const newList = {
+        userId,
+        name: listName,
+        description,
+        visibility,
+        superheroes: superheroes || [],
+    };
+
+    superheroLists.push(newList);
+
+    //save superhero lists to a database here
 }
+
 
 
 // Update checkIfListExists function to include userId

@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { getAuth, onAuthStateChanged, getIdTokenResult } from 'firebase/auth';
 
-const CreateList = ({onClose}) => {
+const CreateList = ({ onClose }) => {
     const [user, setUser] = useState(null);
     const [listName, setListName] = useState('');
     const [description, setDescription] = useState('');
-    const [heroesCollection, setHeroesCollection] = useState('');
+    const [heroesCollection, setHeroesCollection] = useState([]);
     const [visibility, setVisibility] = useState('private');
+    const [query, setQuery] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
 
     useEffect(() => {
         const authInstance = getAuth();
@@ -59,17 +61,18 @@ const CreateList = ({onClose}) => {
                 body: JSON.stringify({
                     listName,
                     description,
-                    heroesCollection,
+                    superheroes: heroesCollection, // Update this line
                     visibility,
                 }),
             });
+
 
             if (response.ok) {
                 console.log('List created successfully.');
                 // Handle success
             } else {
                 console.error('Error creating list:', response.status, response.statusText);
-                // Handle error
+                alert('Error creating list.');
             }
         } catch (error) {
             console.error('Error getting user token:', error);
@@ -78,16 +81,38 @@ const CreateList = ({onClose}) => {
         onClose();
     };
 
-    //if the user is not logged in, don't show the create list form
-    if(!user) {
-        return null;
-    }
+    const handleSearch = async (e) => {
+        e.preventDefault();
+
+        try {
+            const response = await fetch(`/superhero-search?query=${query}`);
+            if (response.ok) {
+                const data = await response.json();
+                setSearchResults(data);
+            } else {
+                console.error('Error searching for heroes:', response.status, response.statusText);
+            }
+        } catch (error) {
+            console.error('Error searching for heroes:', error);
+        }
+    };
+
+    const handleAddToMyList = (selectedHero) => {
+        // Check if the selected hero is already in the heroesCollection array
+        if (!heroesCollection.find(hero => hero.name === selectedHero.name)) {
+            // If not, add the selected hero to the heroesCollection state
+            setHeroesCollection(prevHeroes => [...prevHeroes, selectedHero]);
+            console.log('Adding hero to the list:', selectedHero);
+        } else {
+            console.log('Hero is already in the list:', selectedHero);
+        }
+    };
 
     return (
         <div className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-md bg-opacity-50 bg-black">
             <div className="bg-white w-96 p-6 rounded-md shadow-md">
                 <h2 className="text-2xl font-semibold mb-4">Create a New List</h2>
-                <form>
+                <form onSubmit={handleSearch}>
                     <div className="mb-4">
                         <label className="block text-gray-700 text-sm font-bold mb-2">
                             List Name:
@@ -122,6 +147,43 @@ const CreateList = ({onClose}) => {
                             <option value="public">Public</option>
                         </select>
                     </div>
+                    <div className="mb-4">
+                        <label className="block text-gray-700 text-sm font-bold mb-2">
+                            Search Heroes:
+                        </label>
+                        <div className="flex">
+                            <input
+                                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:border-blue-500"
+                                type="text"
+                                value={query}
+                                onChange={(e) => setQuery(e.target.value)}
+                            />
+                            <button
+                                className="bg-blue-500 text-white py-2 px-4 rounded-md ml-2"
+                                type="submit"
+                            >
+                                Search
+                            </button>
+                        </div>
+                        {searchResults.length > 0 && (
+                            <div className="mt-2">
+                                <p className="text-sm font-semibold mb-1">Search Results:</p>
+                                <ul className="list-disc pl-4">
+                                    {searchResults.map((hero) => (
+                                        <li key={hero.id}>
+                                            {hero.name} - {hero.Publisher}
+                                            <button
+                                                className="ml-2 bg-green-500 text-white py-1 px-2 rounded-md"
+                                                onClick={() => handleAddToMyList(hero)}
+                                            >
+                                                Add to List
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+                    </div>
                 </form>
                 <div className="flex justify-end mt-4">
                     <button
@@ -141,7 +203,6 @@ const CreateList = ({onClose}) => {
             </div>
         </div>
     );
-
 };
 
 export default CreateList;
