@@ -16,6 +16,7 @@ let superheroLists = [];//all user created lists
 
 let superheroData = [];//all superhero data
 
+
 function generateRandomId() {
     return crypto.randomBytes(8).toString('hex');
 }
@@ -333,6 +334,8 @@ function saveSuperheroList(listName, description, visibility, userId, superheroe
         description,
         visibility,
         superheroes: superheroes || [],
+        createdAt: new Date(),
+        modifiedAt: new Date(),
     };
 
     superheroLists.push(newList);
@@ -428,16 +431,20 @@ app.get('/superhero-lists/:listName', (req, res) => {
 });
 
 
-app.put('/superhero-lists/:listId', extractUserFromToken, (req, res) => {
+app.put('/superhero-lists/:listId', extractUserFromToken, async (req, res) => {
     const { listId } = req.params;
-    const { name, description, visibility, superheroes } = req.body; // Ensure 'superheroes' is used instead of 'heroes'
+    const { name, description, visibility, superheroes } = req.body;
     const { userId } = req.user;
+    const updateTimestamp = new Date().toISOString();
 
     try {
         const updatedList = updateSuperheroList(listId, userId, name, description, visibility, superheroes);
 
         if (updatedList) {
-            res.status(200).json({ message: 'Superhero list updated successfully' });
+            res.status(200).json({
+                message: 'Superhero list updated successfully',
+                modifiedAt: updateTimestamp,
+            });
         } else {
             res.status(404).json({ error: `List with ID "${listId}" not found or unauthorized` });
         }
@@ -448,6 +455,7 @@ app.put('/superhero-lists/:listId', extractUserFromToken, (req, res) => {
 });
 
 
+
 function updateSuperheroList(listId, userId, name, description, visibility, superheroes) {
     const listIndex = superheroLists.findIndex(list => list.id === listId && list.userId === userId);
 
@@ -455,7 +463,8 @@ function updateSuperheroList(listId, userId, name, description, visibility, supe
         superheroLists[listIndex].name = name || superheroLists[listIndex].name;
         superheroLists[listIndex].description = description || superheroLists[listIndex].description;
         superheroLists[listIndex].visibility = visibility || superheroLists[listIndex].visibility;
-        superheroLists[listIndex].superheroes = superheroes || superheroLists[listIndex].superheroes; // Fix the field name
+        superheroLists[listIndex].superheroes = superheroes || superheroLists[listIndex].superheroes;
+        superheroLists[listIndex].modifiedAt = new Date();
 
         // Save superhero lists to a database or JSON file here
         fs.writeFile(superheroListsPath, JSON.stringify(superheroLists, null, 2), (err) => {

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 
-const EditList = ({ listId, initialListName, onClose, onSave }) => {
+const EditList = ({listId, initialListName, onClose, onSave}) => {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [editedListName, setEditedListName] = useState('');
@@ -8,6 +8,7 @@ const EditList = ({ listId, initialListName, onClose, onSave }) => {
     const [query, setQuery] = useState('');
     const [searchResults, setSearchResults] = useState([]);
     const [heroesCollection, setHeroesCollection] = useState([]);
+    const [modifiedAt, setModifiedAt] = useState('');
 
     const minLength = 0;
 
@@ -27,7 +28,8 @@ const EditList = ({ listId, initialListName, onClose, onSave }) => {
                     setName(listDetails.name);
                     setDescription(listDetails.description);
                     setVisibility(listDetails.visibility);
-                    setHeroesCollection(listDetails.superheroes || []); // Set state for heroes
+                    setHeroesCollection(listDetails.superheroes || []);
+                    setModifiedAt(listDetails.modifiedAt);
 
                     // If initialListName is provided, set it to editedListName
                     if (initialListName) {
@@ -111,6 +113,13 @@ const EditList = ({ listId, initialListName, onClose, onSave }) => {
         <div className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-md bg-opacity-50 bg-black">
             <div className="bg-white w-full max-w-md p-6 rounded-md shadow-md">
                 <h2 className="text-2xl font-semibold mb-4">Edit Your List</h2>
+
+                <div className="mb-4">
+                    <label className="block text-gray-700 text-sm font-bold mb-2">
+                        Last Modified at:
+                    </label>
+                    <p>{modifiedAt ? new Date(modifiedAt).toLocaleString() : 'N/A'}</p>
+                </div>
 
                 <form onSubmit={handleSearch}>
                     {/* List Name */}

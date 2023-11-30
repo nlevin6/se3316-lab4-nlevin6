@@ -16,12 +16,17 @@ const ViewListsPage = () => {
                 throw new Error('Network response was not ok');
             }
             const data = await response.json();
-            setLists(data.lists || []);
-            setExpandedLists(new Array(data.lists.length).fill(false));
+
+            // Sort the lists based on the modifiedAt timestamp in descending order
+            const sortedLists = data.lists.sort((a, b) => new Date(b.modifiedAt) - new Date(a.modifiedAt));
+
+            setLists(sortedLists || []);
+            setExpandedLists(new Array(sortedLists.length).fill(false));
         } catch (error) {
             console.error('Error fetching superhero lists:', error);
         }
     };
+
 
     useEffect(() => {
         fetchSuperheroLists();
@@ -36,8 +41,14 @@ const ViewListsPage = () => {
             });
 
             if (response.ok) {
-                setLists((prevLists) => prevLists.filter((list) => list.id !== listId));
-                setExpandedLists((prevExpandedLists) => prevExpandedLists.filter((_, index) => index !== lists.findIndex((list) => list.id === listId)));
+                // Use the state update function's callback to ensure that the state is updated
+                setLists((prevLists) => {
+                    const updatedLists = prevLists.filter((list) => list.id !== listId);
+                    setExpandedLists((prevExpandedLists) =>
+                        prevExpandedLists.filter((_, index) => index !== prevLists.findIndex((list) => list.id === listId))
+                    );
+                    return updatedLists;
+                });
             } else {
                 console.error('Error deleting list:', response.status, response.statusText);
             }
@@ -45,8 +56,6 @@ const ViewListsPage = () => {
             console.error('Error deleting list:', error);
         }
     };
-
-
 
 
 
@@ -121,6 +130,7 @@ const ViewListsPage = () => {
                     </div>
                     {expandedLists[index] && (
                         <div>
+                            <p>Last modified at: {new Date(list.modifiedAt).toLocaleString()}</p>
                             <p>{list.description}</p>
                             {list.superheroes && list.superheroes.length > 0 && (
                                 <div className="bg-gray-100 p-4 mt-4 border border-gray-300 rounded">
