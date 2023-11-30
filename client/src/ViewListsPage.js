@@ -41,7 +41,6 @@ const ViewListsPage = () => {
             });
 
             if (response.ok) {
-                // Use the state update function's callback to ensure that the state is updated
                 setLists((prevLists) => {
                     const updatedLists = prevLists.filter((list) => list.id !== listId);
                     setExpandedLists((prevExpandedLists) =>
@@ -56,8 +55,6 @@ const ViewListsPage = () => {
             console.error('Error deleting list:', error);
         }
     };
-
-
 
     const handleGoBack = () => {
         window.history.back();

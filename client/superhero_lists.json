@@ -1,1 +1,42 @@
-[{"id":"eb1b87351f7e9a31","name":"tes list public","description":"asdasd","visibility":"public","superheroes":[{"name":"Flash","Publisher":"DC Comics"},{"name":"Batgirl IV","Publisher":"DC Comics"},{"name":"Batman","Publisher":"DC Comics"}],"createdAt":"2023-11-30T20:57:22.871Z","modifiedAt":"2023-11-30T20:59:31.556Z"}]
+[
+  {
+    "id": "eb1b87351f7e9a31",
+    "name": "tes list public",
+    "description": "hello",
+    "visibility": "public",
+    "superheroes": [
+      {
+        "name": "Flash",
+        "Publisher": "DC Comics"
+      },
+      {
+        "name": "Batgirl IV",
+        "Publisher": "DC Comics"
+      },
+      {
+        "name": "Batman",
+        "Publisher": "DC Comics"
+      }
+    ],
+    "createdAt": "2023-11-30T20:57:22.871Z",
+    "modifiedAt": "2023-11-30T21:04:12.953Z"
+  },
+  {
+    "id": "853bae0cd8442147",
+    "name": "test list 2",
+    "description": "this is my test list",
+    "visibility": "public",
+    "superheroes": [
+      {
+        "name": "Superboy-Prime",
+        "Publisher": "DC Comics"
+      },
+      {
+        "name": "Supergirl",
+        "Publisher": "DC Comics"
+      }
+    ],
+    "createdAt": "2023-11-30T21:03:47.974Z",
+    "modifiedAt": "2023-11-30T21:04:01.778Z"
+  }
+]
