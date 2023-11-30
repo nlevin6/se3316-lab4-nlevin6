@@ -334,6 +334,7 @@ function saveSuperheroList(listName, description, visibility, userId, superheroe
         description,
         visibility,
         superheroes: superheroes || [],
+        ratings: [],
         createdAt: new Date(),
         modifiedAt: new Date(),
     };
@@ -396,9 +397,9 @@ app.get('/fetch-superheroes-in-list', (req, res) => {
 });
 
 //delete a list of superheroes with a given name
-app.delete('/superhero-lists/:listName', (req, res) => {
-    const { listName } = req.params;
-    const listIndex = superheroLists.findIndex(list => list.name === listName);
+app.delete('/superhero-lists/:id', (req, res) => {
+    const { id } = req.params;
+    const listIndex = superheroLists.findIndex(list => list.id === id);
 
     if (listIndex !== -1) {
         // Remove the list from the array
@@ -410,13 +411,14 @@ app.delete('/superhero-lists/:listName', (req, res) => {
                 console.error('Error writing superhero_lists.json file:', err);
                 res.status(500).json({ error: 'Error updating superhero_lists.json file' });
             } else {
-                res.status(200).json({ message: `List "${listName}" and its contents deleted successfully` });
+                res.status(200).json({ message: `List with ID "${id}" and its contents deleted successfully` });
             }
         });
     } else {
-        res.status(404).json({ error: `List "${listName}" doesn't exist` });
+        res.status(404).json({ error: `List with ID "${id}" doesn't exist` });
     }
 });
+
 
 app.get('/superhero-lists/:listName', (req, res) => {
     const { listName } = req.params;
@@ -481,7 +483,41 @@ function updateSuperheroList(listId, userId, name, description, visibility, supe
     return null;
 }
 
+app.post('/superhero-lists/:id/ratings', extractUserFromToken, (req, res) => {
+    const { id } = req.params;
+    const { userId } = req.user;
+    const { rating, comment } = req.body;
 
+    const listIndex = superheroLists.findIndex((list) => list.id === id);
+
+    if (listIndex !== -1) {
+        superheroLists[listIndex].ratings.push({ userId, rating, comment });
+
+        // Update superheroLists JSON file
+        fs.writeFile(superheroListsPath, JSON.stringify(superheroLists), (err) => {
+            if (err) {
+                console.error('Error writing superhero_lists.json file:', err);
+                res.status(500).json({ error: 'Error updating superhero_lists.json file' });
+            } else {
+                res.status(200).json({ message: `Rating added to list with ID "${id}" successfully` });
+            }
+        });
+    } else {
+        res.status(404).json({ error: `List with ID "${id}" not found` });
+    }
+});
+
+
+
+app.get('/superhero-lists/:id/ratings', (req, res) => {
+    const { id } = req.params;
+    const list = superheroLists.find(list => list.id === id);
+    if (list) {
+        res.json(list.ratings);
+    } else {
+        res.status(404).json({ error: `List with ID "${id}" not found` });
+    }
+});
 
 
 //port listen message
