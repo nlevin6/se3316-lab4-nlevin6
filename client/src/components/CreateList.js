@@ -45,14 +45,33 @@ const CreateList = ({ onClose }) => {
                 console.log('User is not authenticated. Unable to create a list.');
                 return;
             }
-
             const tokenResult = await getIdTokenResult(user);
             const token = tokenResult.token;
+            const response = await fetch(`/user-lists-count`, {
+                method: 'GET',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const userListsCount = data.count || 0;
+
+                if (userListsCount >= 20) {
+                    alert('List limit reached. You can create a maximum of 20 lists.');
+                    return;
+                }
+            } else {
+                console.error('Error checking user lists count:', response.status, response.statusText);
+                alert('Error checking user lists count.');
+                return;
+            }
 
             console.log('Authenticated User. Token:', token);
             console.log({ listName, description, heroesCollection, visibility });
 
-            const response = await fetch('/superhero-lists', {
+            const createListResponse = await fetch('/superhero-lists', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -66,22 +85,23 @@ const CreateList = ({ onClose }) => {
                 }),
             });
 
-            if (response.ok) {
-                const data = await response.json();
-                const newListId = data.listId; // Assuming your server returns the generated ID
+            if (createListResponse.ok) {
+                const listData = await createListResponse.json();
+                const newListId = listData.listId;
 
                 console.log('List created successfully. ID:', newListId);
-                // You can use newListId to fetch information later
             } else {
-                console.error('Error creating list:', response.status, response.statusText);
+                console.error('Error creating list:', createListResponse.status, createListResponse.statusText);
                 alert('Error creating list.');
             }
+
         } catch (error) {
             console.error('Error getting user token:', error);
         }
 
         onClose();
     };
+
 
     const handleSearch = async (e) => {
         e.preventDefault();

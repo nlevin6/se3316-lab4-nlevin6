@@ -139,7 +139,10 @@ const ViewListsPage = () => {
     };
 
     const isAuthenticated = user !== null;
-    const visibleLists = isAuthenticated ? lists : lists.filter(list => list.visibility === 'public');
+    //this will show 20 lists to registered users and 10 lists to unregistered users
+    const visibleLists = isAuthenticated
+        ? lists.slice(0, 20)
+        : lists.filter((list) => list.visibility === 'public').slice(0, 10);
 
     return (
         <div>
@@ -240,11 +243,11 @@ const ViewListsPage = () => {
                             )}
 
                             {!isAuthenticated && (
-                            <div>
-                                <p>
-                                    You must be registered and logged in to leave comments and submit ratings.
-                                </p>
-                            </div>
+                                <div>
+                                    <p>
+                                        You must be registered and logged in to leave comments and submit ratings.
+                                    </p>
+                                </div>
                             )}
                         </div>
                     )}

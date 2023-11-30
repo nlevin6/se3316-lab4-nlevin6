@@ -29,8 +29,9 @@ const SearchResults = ({ results }) => {
         window.open(searchQuery, '_blank');
     };
 
-    //change this based on how many results should be displayed to the user. free users can only see 10 results
-    const displayedResults = results.slice(0, 10);
+    //change this based on how many results should be displayed to the user.
+    // just add result.slice(0, x) to limit to x results
+    const displayedResults = results
 
     return (
         <div className="container mx-auto my-8">
