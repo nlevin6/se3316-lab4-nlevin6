@@ -9,10 +9,20 @@ const admin = require('firebase-admin');
 
 const superheroInfoPath = path.join(__dirname, 'superhero_info.json');
 const superheroPowersPath = path.join(__dirname, 'superhero_powers.json');
+const superheroListsPath = path.join(__dirname, 'superhero_lists.json');
 
 let superheroLists = [];//all user created lists
 
 let superheroData = [];//all superhero data
+
+fs.readFile(superheroListsPath, 'utf8', (err, data) => {
+    if (err) {
+        console.error('Error reading superhero_lists.json file:', err);
+        return;
+    }
+    superheroLists = JSON.parse(data);
+});
+
 fs.readFile(superheroInfoPath, 'utf8', (err, data) => {
     if (err) {
         console.error('Error reading superhero_info.json file: ', err);
@@ -261,7 +271,6 @@ app.get('/superhero-lists', extractUserFromToken, (req, res) => {
     const {userId} = req.user;
 
     res.json({lists: superheroLists.map(list => ({...list, userId}))});
-    console.log("userId in GET request: " + userId);
 });
 
 
@@ -298,8 +307,15 @@ function saveSuperheroList(listName, description, visibility, userId, superheroe
     superheroLists.push(newList);
 
     //save superhero lists to a database here
+    fs.writeFile(superheroListsPath, JSON.stringify(superheroLists, null, 2), (err) => {
+        if (err) {
+            console.error('Error saving superhero lists to file:', err);
+            // Handle the error as needed
+        } else {
+            console.log('Superhero lists saved to file successfully');
+        }
+    });
 }
-
 
 
 // Update checkIfListExists function to include userId
@@ -343,14 +359,24 @@ app.get('/fetch-superheroes-in-list', (req, res) => {
 
 //delete a list of superheroes with a given name
 app.delete('/superhero-lists/:listName', (req, res) => {
-    const {listName} = req.params;
+    const { listName } = req.params;
     const listIndex = superheroLists.findIndex(list => list.name === listName);
 
     if (listIndex !== -1) {
+        // Remove the list from the array
         superheroLists.splice(listIndex, 1);
-        res.status(200).json({message: `List "${listName}" and its contents deleted successfully`});
+
+        // Write the updated superheroLists array back to the JSON file
+        fs.writeFile(superheroListsPath, JSON.stringify(superheroLists), (err) => {
+            if (err) {
+                console.error('Error writing superhero_lists.json file:', err);
+                res.status(500).json({ error: 'Error updating superhero_lists.json file' });
+            } else {
+                res.status(200).json({ message: `List "${listName}" and its contents deleted successfully` });
+            }
+        });
     } else {
-        res.status(404).json({error: `List "${listName}" doesn't exist`});
+        res.status(404).json({ error: `List "${listName}" doesn't exist` });
     }
 });
 

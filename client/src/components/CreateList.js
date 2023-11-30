@@ -98,20 +98,24 @@ const CreateList = ({ onClose }) => {
     };
 
     const handleAddToMyList = (selectedHero) => {
-        // Check if the selected hero is already in the heroesCollection array
-        if (!heroesCollection.find(hero => hero.name === selectedHero.name)) {
-            // If not, add the selected hero to the heroesCollection state
+        const heroIndex = heroesCollection.findIndex(hero => hero.name === selectedHero.name);
+
+        if (heroIndex === -1) {
+            // Hero not in the list, add it
             setHeroesCollection(prevHeroes => [...prevHeroes, selectedHero]);
-            console.log('Adding hero to the list:', selectedHero);
         } else {
-            console.log('Hero is already in the list:', selectedHero);
+            // Hero is in the list, remove it
+            const updatedHeroes = [...heroesCollection];
+            updatedHeroes.splice(heroIndex, 1);
+            setHeroesCollection(updatedHeroes);
         }
     };
 
     return (
         <div className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-md bg-opacity-50 bg-black">
-            <div className="bg-white w-96 p-6 rounded-md shadow-md">
+            <div className="bg-white w-full max-w-md p-6 rounded-md shadow-md">
                 <h2 className="text-2xl font-semibold mb-4">Create a New List</h2>
+
                 <form onSubmit={handleSearch}>
                     <div className="mb-4">
                         <label className="block text-gray-700 text-sm font-bold mb-2">
@@ -170,13 +174,15 @@ const CreateList = ({ onClose }) => {
                                 <p className="text-sm font-semibold mb-1">Search Results:</p>
                                 <ul className="list-disc pl-4">
                                     {searchResults.map((hero) => (
-                                        <li key={hero.id}>
-                                            {hero.name} - {hero.Publisher}
+                                        <li key={hero.id} className="flex justify-between items-center">
+                                            <div>
+                                                {hero.name} - {hero.Publisher}
+                                            </div>
                                             <button
-                                                className="ml-2 bg-green-500 text-white py-1 px-2 rounded-md"
+                                                className={`ml-2 ${heroesCollection.find(h => h.name === hero.name) ? 'bg-red-500' : 'bg-green-500'} text-white py-1 px-2 rounded-md`}
                                                 onClick={() => handleAddToMyList(hero)}
                                             >
-                                                Add to List
+                                                {heroesCollection.find(h => h.name === hero.name) ? 'Remove from List' : 'Add to List'}
                                             </button>
                                         </li>
                                     ))}
