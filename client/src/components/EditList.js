@@ -9,16 +9,13 @@ const EditList = ({ listId, initialListName, onClose, onSave }) => {
     const [searchResults, setSearchResults] = useState([]);
     const [heroesCollection, setHeroesCollection] = useState([]);
 
-    const minLength = 1;
+    const minLength = 0;
 
     useEffect(() => {
         const fetchListDetails = async () => {
             try {
-                console.log("list ID: " + listId);
                 if (listId.trim() !== '' && listId.length >= minLength) {
-
                     const response = await fetch(`/superhero-lists/${listId}`);
-                    console.log("list ID: " + listId);
 
                     if (!response.ok) {
                         throw new Error('Network response was not ok');
@@ -26,29 +23,24 @@ const EditList = ({ listId, initialListName, onClose, onSave }) => {
 
                     const data = await response.json();
                     const listDetails = data.list;
+
                     setName(listDetails.name);
                     setDescription(listDetails.description);
                     setVisibility(listDetails.visibility);
-                    // Set state for heroes
+                    setHeroesCollection(listDetails.superheroes || []); // Set state for heroes
+
+                    // If initialListName is provided, set it to editedListName
+                    if (initialListName) {
+                        setEditedListName(initialListName);
+                    }
                 }
             } catch (error) {
                 console.error('Error fetching list details:', error);
             }
         };
 
-
-
-        // Ensure editedListName is not blank before calling fetchListDetails
-        if (editedListName.trim() !== '') {
-            fetchListDetails();
-        }
-
-        // Set initial values for name and description
-        if (initialListName) {
-            setEditedListName(initialListName);
-        }
-
-    }, [initialListName, listId]);  // Add initialListName as a dependency
+        fetchListDetails();
+    }, [listId, initialListName, minLength]);
 
 
     const handleSearch = async (e) => {
@@ -71,13 +63,16 @@ const EditList = ({ listId, initialListName, onClose, onSave }) => {
         const heroIndex = heroesCollection.findIndex(hero => hero.name === selectedHero.name);
 
         if (heroIndex === -1) {
+            // Add hero to the collection
             setHeroesCollection(prevHeroes => [...prevHeroes, selectedHero]);
         } else {
+            // Remove hero from the collection
             const updatedHeroes = [...heroesCollection];
             updatedHeroes.splice(heroIndex, 1);
             setHeroesCollection(updatedHeroes);
         }
     };
+
 
     const handleSave = async () => {
         try {
@@ -86,6 +81,7 @@ const EditList = ({ listId, initialListName, onClose, onSave }) => {
                 console.error('List name is empty');
                 return;
             }
+
             // Make a request to update the list on the server using editedListId
             const response = await fetch(`/superhero-lists/${listId}`, {
                 method: 'PUT',
@@ -96,7 +92,7 @@ const EditList = ({ listId, initialListName, onClose, onSave }) => {
                     name: editedListName,
                     description,
                     visibility,
-                    // Include heroes in the body if needed
+                    superheroes: heroesCollection,
                 }),
             });
 
@@ -111,16 +107,13 @@ const EditList = ({ listId, initialListName, onClose, onSave }) => {
         }
     };
 
-
-
-
-
     return (
         <div className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-md bg-opacity-50 bg-black">
             <div className="bg-white w-full max-w-md p-6 rounded-md shadow-md">
                 <h2 className="text-2xl font-semibold mb-4">Edit Your List</h2>
 
                 <form onSubmit={handleSearch}>
+                    {/* List Name */}
                     <div className="mb-4">
                         <label className="block text-gray-700 text-sm font-bold mb-2">
                             List Name:
@@ -132,6 +125,8 @@ const EditList = ({ listId, initialListName, onClose, onSave }) => {
                             onChange={(e) => setEditedListName(e.target.value)}
                         />
                     </div>
+
+                    {/* Description */}
                     <div className="mb-4">
                         <label className="block text-gray-700 text-sm font-bold mb-2">
                             Description:
@@ -142,6 +137,8 @@ const EditList = ({ listId, initialListName, onClose, onSave }) => {
                             onChange={(e) => setDescription(e.target.value)}
                         />
                     </div>
+
+                    {/* Visibility */}
                     <div className="mb-4">
                         <label className="block text-gray-700 text-sm font-bold mb-2">
                             Visibility:
@@ -155,6 +152,8 @@ const EditList = ({ listId, initialListName, onClose, onSave }) => {
                             <option value="public">Public</option>
                         </select>
                     </div>
+
+                    {/* Search Heroes */}
                     <div className="mb-4">
                         <label className="block text-gray-700 text-sm font-bold mb-2">
                             Search Heroes:

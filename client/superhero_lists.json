@@ -1,44 +1,74 @@
 [
   {
-    "id": "41feb9d9beb1da1a",
-    "name": "test list ",
-    "description": "asdasd",
-    "visibility": "private",
-    "superheroes": []
+    "id": "9cf2812daab122d8",
+    "name": "private test ",
+    "description": "sadfas",
+    "visibility": "public",
+    "superheroes": [
+      {
+        "name": "Flash",
+        "Publisher": "DC Comics"
+      },
+      {
+        "name": "Flash IV",
+        "Publisher": "DC Comics"
+      },
+      {
+        "name": "Kid Flash II",
+        "Publisher": "DC Comics"
+      },
+      {
+        "name": "Flash II",
+        "Publisher": "DC Comics"
+      },
+      {
+        "name": "Superboy-Prime",
+        "Publisher": "DC Comics"
+      },
+      {
+        "name": "Supergirl",
+        "Publisher": "DC Comics"
+      },
+      {
+        "name": "Batman",
+        "Publisher": "DC Comics"
+      },
+      {
+        "name": "Batgirl III",
+        "Publisher": "DC Comics"
+      }
+    ]
   },
   {
-    "id": "2a2ae8b4cb2b9318",
-    "name": "test list",
-    "description": "asda",
+    "id": "e14df722bf8cee9a",
+    "name": "public list test",
+    "description": "sdasd",
     "visibility": "private",
-    "superheroes": []
-  },
-  {
-    "id": "72b8a7672ddf64c3",
-    "name": "test",
-    "description": "asdsad",
-    "visibility": "private",
-    "superheroes": []
-  },
-  {
-    "id": "316cdce994280f8a",
-    "name": "TEST ETST ETST",
-    "description": "ASDASDASD",
-    "visibility": "private",
-    "superheroes": []
-  },
-  {
-    "id": "d1b1dcfa42416d27",
-    "name": "bla bla bla",
-    "description": "asdasd",
-    "visibility": "private",
-    "superheroes": []
-  },
-  {
-    "id": "316d0dff0d18a8d7",
-    "name": "HELLO",
-    "description": "SDFS",
-    "visibility": "private",
-    "superheroes": []
+    "superheroes": [
+      {
+        "name": "Batman II",
+        "Publisher": "DC Comics"
+      },
+      {
+        "name": "Batwoman V",
+        "Publisher": "DC Comics"
+      },
+      {
+        "name": "Batman",
+        "Publisher": "DC Comics"
+      },
+      {
+        "name": "Cyborg Superman",
+        "Publisher": "DC Comics"
+      },
+      {
+        "name": "Supergirl",
+        "Publisher": "DC Comics"
+      },
+      {
+        "name": "Superboy-Prime",
+        "Publisher": "DC Comics"
+      }
+    ]
   }
 ]

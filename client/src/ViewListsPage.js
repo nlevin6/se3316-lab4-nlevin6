@@ -8,44 +8,34 @@ const ViewListsPage = () => {
     const authInstance = getAuth();
     const user = authInstance.currentUser;
 
-    const fetchListById = async (listId) => {
+    const fetchSuperheroLists = async () => {
         try {
-            const response = await fetch(`/superhero-lists/${listId}`);
+            const response = await fetch('/superhero-lists');
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
             const data = await response.json();
-            return data.list;
+            setLists(data.lists || []);
         } catch (error) {
-            console.error('Error fetching list by ID:', error);
-            return null;
+            console.error('Error fetching superhero lists:', error);
         }
     };
 
 
-
     useEffect(() => {
-        if (editList && editList.id) {
-            fetchListById(editList.id)
-                .then(listData => {
-                    if (listData) {
-                        setEditList(listData);
-                    } else {
-                        console.error('List not found');
-                    }
-                });
-        }
-    }, [editList]);
+        // Fetch superhero lists when the component mounts
+        fetchSuperheroLists();
+    }, []);
 
-    const handleDeleteList = async (listName) => {
+    const handleDeleteList = async (listId) => {
         try {
-            console.log('Deleting list:', listName);
+            console.log('Deleting list:', listId);
 
-            const response = await fetch(`/superhero-lists/${listName}`, {
+            const response = await fetch(`/superhero-lists/${listId}`, {
                 method: 'DELETE',
             });
             if (response.ok) {
-                setLists((prevLists) => prevLists.filter((list) => list.name !== listName));
+                setLists((prevLists) => prevLists.filter((list) => list.name !== listId));
             } else {
                 console.error('Error deleting list:', response.status, response.statusText);
             }
@@ -58,16 +48,20 @@ const ViewListsPage = () => {
         window.history.back();
     };
 
-    const handleEditList = async (list) => {
-        if (list) {
-            const listData = await fetchListById(list.id);
-            if (listData) {
-                setEditList(listData);
-            } else {
-                console.error('List not found');
+    const handleEditList = async (listId) => {
+        if (listId) {
+            try {
+                const response = await fetch(`/superhero-lists/${listId}`);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.json();
+                setEditList(data.list);
+            } catch (error) {
+                console.error('Error fetching list details:', error);
             }
         } else {
-            console.error('List object is null or undefined');
+            console.error('List ID is null or undefined');
         }
     };
 
@@ -75,7 +69,7 @@ const ViewListsPage = () => {
 
     const handleSaveEdit = () => {
         setEditList(null);
-        fetchListById();
+        fetchSuperheroLists();
     };
 
     const handleCloseEdit = () => {
@@ -114,7 +108,7 @@ const ViewListsPage = () => {
                                 </button>
                                 <button
                                     className="bg-blue-500 text-white py-2 px-4 rounded cursor-pointer"
-                                    onClick={() => handleEditList(list.name)}
+                                    onClick={() => handleEditList(list.id)}
                                 >
                                     Edit
                                 </button>

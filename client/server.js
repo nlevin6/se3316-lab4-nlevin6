@@ -25,8 +25,16 @@ fs.readFile(superheroListsPath, 'utf8', (err, data) => {
         console.error('Error reading superhero_lists.json file:', err);
         return;
     }
-    superheroLists = JSON.parse(data);
+
+    try {
+        superheroLists = data ? JSON.parse(data) : [];
+    } catch (parseError) {
+        console.error('Error parsing superhero_lists.json:', parseError);
+        superheroLists = []; // Set superheroLists to an empty array or handle it as needed
+    }
 });
+
+
 
 fs.readFile(superheroInfoPath, 'utf8', (err, data) => {
     if (err) {
@@ -280,8 +288,8 @@ app.get('/superhero-lists', extractUserFromToken, (req, res) => {
 
 app.get('/superhero-lists/:listId', (req, res) => {
     const { listId } = req.params;
-    const list = superheroLists.find(list => list.id === parseInt(listId));
-
+    const list = superheroLists.find(list => list.id === listId);
+    console.log("backend list ID: " + listId);
 
     if (list) {
         res.json({ list });
@@ -422,11 +430,11 @@ app.get('/superhero-lists/:listName', (req, res) => {
 
 app.put('/superhero-lists/:listId', extractUserFromToken, (req, res) => {
     const { listId } = req.params;
-    const { name, description, visibility, heroes } = req.body;
+    const { name, description, visibility, superheroes } = req.body; // Ensure 'superheroes' is used instead of 'heroes'
     const { userId } = req.user;
 
     try {
-        const updatedList = updateSuperheroList(listId, userId, name, description, visibility, heroes);
+        const updatedList = updateSuperheroList(listId, userId, name, description, visibility, superheroes);
 
         if (updatedList) {
             res.status(200).json({ message: 'Superhero list updated successfully' });
@@ -439,22 +447,31 @@ app.put('/superhero-lists/:listId', extractUserFromToken, (req, res) => {
     }
 });
 
-function updateSuperheroList(listId, userId, name, description, visibility, heroes) {
+
+function updateSuperheroList(listId, userId, name, description, visibility, superheroes) {
     const listIndex = superheroLists.findIndex(list => list.id === listId && list.userId === userId);
 
     if (listIndex !== -1) {
         superheroLists[listIndex].name = name || superheroLists[listIndex].name;
         superheroLists[listIndex].description = description || superheroLists[listIndex].description;
         superheroLists[listIndex].visibility = visibility || superheroLists[listIndex].visibility;
-        superheroLists[listIndex].heroes = heroes || superheroLists[listIndex].heroes;
+        superheroLists[listIndex].superheroes = superheroes || superheroLists[listIndex].superheroes; // Fix the field name
 
         // Save superhero lists to a database or JSON file here
+        fs.writeFile(superheroListsPath, JSON.stringify(superheroLists, null, 2), (err) => {
+            if (err) {
+                console.error('Error saving superhero lists to file:', err);
+            } else {
+                console.log('Superhero lists saved to file successfully');
+            }
+        });
 
         return superheroLists[listIndex];
     }
 
     return null;
 }
+
 
 
 
