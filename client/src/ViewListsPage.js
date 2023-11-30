@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { getAuth } from 'firebase/auth';
+import React, {useState, useEffect} from 'react';
+import {getAuth} from 'firebase/auth';
 import EditList from './components/EditList';
 
 const ViewListsPage = () => {
     const [lists, setLists] = useState([]);
+    const [expandedLists, setExpandedLists] = useState([]);
     const [editList, setEditList] = useState(null);
     const authInstance = getAuth();
     const user = authInstance.currentUser;
@@ -16,14 +17,13 @@ const ViewListsPage = () => {
             }
             const data = await response.json();
             setLists(data.lists || []);
+            setExpandedLists(new Array(data.lists.length).fill(false));
         } catch (error) {
             console.error('Error fetching superhero lists:', error);
         }
     };
 
-
     useEffect(() => {
-        // Fetch superhero lists when the component mounts
         fetchSuperheroLists();
     }, []);
 
@@ -34,8 +34,10 @@ const ViewListsPage = () => {
             const response = await fetch(`/superhero-lists/${listId}`, {
                 method: 'DELETE',
             });
+
             if (response.ok) {
-                setLists((prevLists) => prevLists.filter((list) => list.name !== listId));
+                setLists((prevLists) => prevLists.filter((list) => list.id !== listId));
+                setExpandedLists((prevExpandedLists) => prevExpandedLists.filter((_, index) => index !== lists.findIndex((list) => list.id === listId)));
             } else {
                 console.error('Error deleting list:', response.status, response.statusText);
             }
@@ -43,6 +45,10 @@ const ViewListsPage = () => {
             console.error('Error deleting list:', error);
         }
     };
+
+
+
+
 
     const handleGoBack = () => {
         window.history.back();
@@ -65,7 +71,13 @@ const ViewListsPage = () => {
         }
     };
 
-
+    const handleExpandToggle = (index) => {
+        setExpandedLists((prevExpandedLists) => {
+            const newExpandedLists = [...prevExpandedLists];
+            newExpandedLists[index] = !newExpandedLists[index];
+            return newExpandedLists;
+        });
+    };
 
     const handleSaveEdit = () => {
         setEditList(null);
@@ -82,22 +94,13 @@ const ViewListsPage = () => {
             <button className="bg-blue-500 text-white py-2 px-4 rounded mb-2" onClick={handleGoBack}>
                 Back
             </button>
-            {lists.map((list) => (
-                (list.visibility === 'public' || user) && (
-                    <div key={list.name} className="mb-4">
-                        <h2 className="text-xl font-semibold mb-2">{list.name}</h2>
-                        <p>{list.description}</p>
-                        {list.superheroes && list.superheroes.length > 0 && (
-                            <div>
-                                <h3 className="text-lg font-semibold mt-2">Heroes:</h3>
-                                <ul>
-                                    {list.superheroes.map((hero, index) => (
-                                        <li key={index}>{hero.name} - {hero.Publisher}</li>
-                                    ))}
-                                </ul>
-                            </div>
-                        )}
-
+            {lists.map((list, index) => (
+                <div key={list.name} className="mb-4 p-4 border border-gray-300 rounded">
+                    <div className="flex justify-between items-center">
+                        <button className="text-xl font-semibold mb-2 cursor-pointer"
+                                onClick={() => handleExpandToggle(index)}>
+                            {list.name}
+                        </button>
                         {user && (
                             <div>
                                 <button
@@ -114,8 +117,24 @@ const ViewListsPage = () => {
                                 </button>
                             </div>
                         )}
+
                     </div>
-                )
+                    {expandedLists[index] && (
+                        <div>
+                            <p>{list.description}</p>
+                            {list.superheroes && list.superheroes.length > 0 && (
+                                <div className="bg-gray-100 p-4 mt-4 border border-gray-300 rounded">
+                                    <h3 className="text-lg font-semibold">Heroes:</h3>
+                                    <ul>
+                                        {list.superheroes.map((hero, heroIndex) => (
+                                            <li key={heroIndex}>{hero.name} - {hero.Publisher}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
             ))}
 
             {editList && (
