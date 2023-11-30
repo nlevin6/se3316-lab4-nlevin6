@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { getAuth } from 'firebase/auth';
+import React, {useState, useEffect} from 'react';
+import {getAuth} from 'firebase/auth';
 import EditList from './components/EditList';
 
 const ViewListsPage = () => {
@@ -126,6 +126,17 @@ const ViewListsPage = () => {
         }
     };
 
+    const calculateAverageRating = (ratings) => {
+        if (!ratings || ratings.length === 0) {
+            return null; // No ratings
+        }
+
+        const totalRating = ratings.reduce((sum, rating) => sum + parseInt(rating.rating), 0);
+        const averageRating = totalRating / ratings.length;
+
+        return averageRating.toFixed(1);
+    };
+
 
     return (
         <div>
@@ -136,8 +147,14 @@ const ViewListsPage = () => {
             {lists.map((list, index) => (
                 <div key={list.name} className="mb-4 p-4 border border-gray-300 rounded">
                     <div className="flex justify-between items-center">
-                        <button className="text-xl font-semibold mb-2 cursor-pointer" onClick={() => handleExpandToggle(index)}>
-                            {list.name}
+                        <button className="text-xl font-semibold mb-2 cursor-pointer"
+                                onClick={() => handleExpandToggle(index)}>
+                            {list.name} {list.visibility === 'public' && (
+                            <span className="text-gray-600 text-sm">
+                        {' '}
+                                --- {calculateAverageRating(list.ratings) || 'No ratings'} ({list.ratings.length} votes)
+                            </span>
+                        )}
                         </button>
                         {user && (
                             <div>
@@ -183,38 +200,41 @@ const ViewListsPage = () => {
                                     </ul>
                                 </div>
                             )}
-
-                            <form onSubmit={(event) => handleSubmitRating(event, list.id)} className="mt-4">
-                                <div className="mb-4">
-                                    <label className="block text-sm font-semibold text-gray-600 mb-1" htmlFor="rating">
-                                        Rating:
-                                    </label>
-                                    <input
-                                        type="number"
-                                        min="1"
-                                        max="5"
-                                        value={ratingValue}
-                                        onChange={(e) => setRatingValue(e.target.value)}
-                                        className="w-full border rounded py-2 px-3 text-gray-700 focus:outline-none focus:border-blue-500"
-                                    />
-                                </div>
-                                <div className="mb-4">
-                                    <label className="block text-sm font-semibold text-gray-600 mb-1" htmlFor="comment">
-                                        Comment:
-                                    </label>
-                                    <textarea
-                                        value={commentValue}
-                                        onChange={(e) => setCommentValue(e.target.value)}
-                                        className="w-full border rounded py-2 px-3 text-gray-700 focus:outline-none focus:border-blue-500"
-                                    />
-                                </div>
-                                <button
-                                    type="submit"
-                                    className="bg-blue-500 text-white py-2 px-4 rounded focus:outline-none hover:bg-blue-600"
-                                >
-                                    Submit Rating
-                                </button>
-                            </form>
+                            {list.visibility === 'public' && (
+                                <form onSubmit={(event) => handleSubmitRating(event, list.id)} className="mt-4">
+                                    <div className="mb-4">
+                                        <label className="block text-sm font-semibold text-gray-600 mb-1"
+                                               htmlFor="rating">
+                                            Rating:
+                                        </label>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            max="5"
+                                            value={ratingValue}
+                                            onChange={(e) => setRatingValue(e.target.value)}
+                                            className="w-full border rounded py-2 px-3 text-gray-700 focus:outline-none focus:border-blue-500"
+                                        />
+                                    </div>
+                                    <div className="mb-4">
+                                        <label className="block text-sm font-semibold text-gray-600 mb-1"
+                                               htmlFor="comment">
+                                            Comment:
+                                        </label>
+                                        <textarea
+                                            value={commentValue}
+                                            onChange={(e) => setCommentValue(e.target.value)}
+                                            className="w-full border rounded py-2 px-3 text-gray-700 focus:outline-none focus:border-blue-500"
+                                        />
+                                    </div>
+                                    <button
+                                        type="submit"
+                                        className="bg-blue-500 text-white py-2 px-4 rounded focus:outline-none hover:bg-blue-600"
+                                    >
+                                        Submit Rating
+                                    </button>
+                                </form>
+                            )}
 
 
                         </div>
@@ -222,7 +242,8 @@ const ViewListsPage = () => {
                 </div>
             ))}
             {editList && (
-                <EditList listId={editList.id} initialListName={editList.name} onClose={handleCloseEdit} onSave={handleSaveEdit} />
+                <EditList listId={editList.id} initialListName={editList.name} onClose={handleCloseEdit}
+                          onSave={handleSaveEdit}/>
             )}
         </div>
     );

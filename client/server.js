@@ -356,6 +356,7 @@ function saveSuperheroList(listName, description, visibility, userId, superheroe
 }
 
 
+
 // Update checkIfListExists function to include userId
 function checkIfListExists(listName, userId) {
     return superheroLists.some((list) => list.name === listName && list.userId === userId);
