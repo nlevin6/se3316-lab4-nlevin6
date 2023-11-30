@@ -12,6 +12,7 @@ const ViewListsPage = () => {
     const authInstance = getAuth();
     const user = authInstance.currentUser;
 
+
     const fetchSuperheroLists = async () => {
         try {
             const response = await fetch('/superhero-lists');
@@ -137,6 +138,8 @@ const ViewListsPage = () => {
         return averageRating.toFixed(1);
     };
 
+    const isAuthenticated = user !== null;
+    const visibleLists = isAuthenticated ? lists : lists.filter(list => list.visibility === 'public');
 
     return (
         <div>
@@ -144,7 +147,7 @@ const ViewListsPage = () => {
             <button className="bg-blue-500 text-white py-2 px-4 rounded mb-2" onClick={handleGoBack}>
                 Back
             </button>
-            {lists.map((list, index) => (
+            {visibleLists.map((list, index) => (
                 <div key={list.name} className="mb-4 p-4 border border-gray-300 rounded">
                     <div className="flex justify-between items-center">
                         <button className="text-xl font-semibold mb-2 cursor-pointer"
@@ -156,7 +159,7 @@ const ViewListsPage = () => {
                             </span>
                         )}
                         </button>
-                        {user && (
+                        {isAuthenticated && (
                             <div>
                                 <button
                                     className="bg-red-500 text-white py-2 px-4 rounded mr-2 cursor-pointer"
@@ -200,7 +203,7 @@ const ViewListsPage = () => {
                                     </ul>
                                 </div>
                             )}
-                            {list.visibility === 'public' && (
+                            {isAuthenticated && list.visibility === 'public' && (
                                 <form onSubmit={(event) => handleSubmitRating(event, list.id)} className="mt-4">
                                     <div className="mb-4">
                                         <label className="block text-sm font-semibold text-gray-600 mb-1"
@@ -236,7 +239,13 @@ const ViewListsPage = () => {
                                 </form>
                             )}
 
-
+                            {!isAuthenticated && (
+                            <div>
+                                <p>
+                                    You must be registered and logged in to leave comments and submit ratings.
+                                </p>
+                            </div>
+                            )}
                         </div>
                     )}
                 </div>
