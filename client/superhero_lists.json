@@ -1,0 +1,44 @@
+[
+  {
+    "id": "41feb9d9beb1da1a",
+    "name": "test list ",
+    "description": "asdasd",
+    "visibility": "private",
+    "superheroes": []
+  },
+  {
+    "id": "2a2ae8b4cb2b9318",
+    "name": "test list",
+    "description": "asda",
+    "visibility": "private",
+    "superheroes": []
+  },
+  {
+    "id": "72b8a7672ddf64c3",
+    "name": "test",
+    "description": "asdsad",
+    "visibility": "private",
+    "superheroes": []
+  },
+  {
+    "id": "316cdce994280f8a",
+    "name": "TEST ETST ETST",
+    "description": "ASDASDASD",
+    "visibility": "private",
+    "superheroes": []
+  },
+  {
+    "id": "d1b1dcfa42416d27",
+    "name": "bla bla bla",
+    "description": "asdasd",
+    "visibility": "private",
+    "superheroes": []
+  },
+  {
+    "id": "316d0dff0d18a8d7",
+    "name": "HELLO",
+    "description": "SDFS",
+    "visibility": "private",
+    "superheroes": []
+  }
+]
