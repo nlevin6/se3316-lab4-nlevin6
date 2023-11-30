@@ -1,27 +1,41 @@
 import React, { useState, useEffect } from 'react';
 import { getAuth } from 'firebase/auth';
+import EditList from './components/EditList';
 
 const ViewListsPage = () => {
     const [lists, setLists] = useState([]);
+    const [editList, setEditList] = useState(null);
     const authInstance = getAuth();
     const user = authInstance.currentUser;
 
-    useEffect(() => {
-        const fetchLists = async () => {
-            try {
-                const response = await fetch('/superhero-lists');
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                const data = await response.json();
-                setLists(data.lists);
-            } catch (error) {
-                console.error('Error fetching lists:', error);
+    const fetchListById = async (listId) => {
+        try {
+            const response = await fetch(`/superhero-lists/${listId}`);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
             }
-        };
+            const data = await response.json();
+            return data.list;
+        } catch (error) {
+            console.error('Error fetching list by ID:', error);
+            return null;
+        }
+    };
 
-        fetchLists();
-    }, []);
+
+
+    useEffect(() => {
+        if (editList && editList.id) {
+            fetchListById(editList.id)
+                .then(listData => {
+                    if (listData) {
+                        setEditList(listData);
+                    } else {
+                        console.error('List not found');
+                    }
+                });
+        }
+    }, [editList]);
 
     const handleDeleteList = async (listName) => {
         try {
@@ -44,8 +58,28 @@ const ViewListsPage = () => {
         window.history.back();
     };
 
-    const handleEditList = (listName) => {
-        // Logic to edit a list here later
+    const handleEditList = async (list) => {
+        if (list) {
+            const listData = await fetchListById(list.id);
+            if (listData) {
+                setEditList(listData);
+            } else {
+                console.error('List not found');
+            }
+        } else {
+            console.error('List object is null or undefined');
+        }
+    };
+
+
+
+    const handleSaveEdit = () => {
+        setEditList(null);
+        fetchListById();
+    };
+
+    const handleCloseEdit = () => {
+        setEditList(null);
     };
 
     return (
@@ -90,6 +124,14 @@ const ViewListsPage = () => {
                 )
             ))}
 
+            {editList && (
+                <EditList
+                    listId={editList.id}
+                    initialListName={editList.name}
+                    onClose={handleCloseEdit}
+                    onSave={handleSaveEdit}
+                />
+            )}
         </div>
     );
 };

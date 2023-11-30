@@ -1,87 +1,55 @@
 import React, { useState, useEffect } from 'react';
-import { getAuth, onAuthStateChanged, getIdTokenResult } from 'firebase/auth';
 
-const CreateList = ({ onClose }) => {
-    const [user, setUser] = useState(null);
-    const [listName, setListName] = useState('');
+const EditList = ({ listId, initialListName, onClose, onSave }) => {
+    const [name, setName] = useState('');
     const [description, setDescription] = useState('');
-    const [heroesCollection, setHeroesCollection] = useState([]);
-    const [visibility, setVisibility] = useState('private');
+    const [editedListName, setEditedListName] = useState('');
+    const [visibility, setVisibility] = useState('');
     const [query, setQuery] = useState('');
     const [searchResults, setSearchResults] = useState([]);
+    const [heroesCollection, setHeroesCollection] = useState([]);
+
+    const minLength = 1;
 
     useEffect(() => {
-        const authInstance = getAuth();
+        const fetchListDetails = async () => {
+            try {
+                console.log("list ID: " + listId);
+                if (listId.trim() !== '' && listId.length >= minLength) {
 
-        const unsubscribe = onAuthStateChanged(authInstance, (user) => {
-            if (user) {
-                setUser(user);
-            } else {
-                setUser(null);
+                    const response = await fetch(`/superhero-lists/${listId}`);
+                    console.log("list ID: " + listId);
+
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+
+                    const data = await response.json();
+                    const listDetails = data.list;
+                    setName(listDetails.name);
+                    setDescription(listDetails.description);
+                    setVisibility(listDetails.visibility);
+                    // Set state for heroes
+                }
+            } catch (error) {
+                console.error('Error fetching list details:', error);
             }
-        });
-
-        return () => {
-            unsubscribe();
         };
-    }, []);
 
-    const handleCreateList = async () => {
-        if (!listName) {
-            alert('Please enter a list name.');
-            return;
+
+
+        // Ensure editedListName is not blank before calling fetchListDetails
+        if (editedListName.trim() !== '') {
+            fetchListDetails();
         }
 
-        if (!user) {
-            console.log('User is not authenticated. Unable to create a list.');
-            return;
+        // Set initial values for name and description
+        if (initialListName) {
+            setEditedListName(initialListName);
         }
 
-        try {
-            const authInstance = getAuth();
-            const user = authInstance.currentUser;
+    }, [initialListName, listId]);  // Add initialListName as a dependency
 
-            if (!user) {
-                console.log('User is not authenticated. Unable to create a list.');
-                return;
-            }
-
-            const tokenResult = await getIdTokenResult(user);
-            const token = tokenResult.token;
-
-            console.log('Authenticated User. Token:', token);
-            console.log({ listName, description, heroesCollection, visibility });
-
-            const response = await fetch('/superhero-lists', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                    listName,
-                    description,
-                    superheroes: heroesCollection,
-                    visibility,
-                }),
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                const newListId = data.listId; // Assuming your server returns the generated ID
-
-                console.log('List created successfully. ID:', newListId);
-                // You can use newListId to fetch information later
-            } else {
-                console.error('Error creating list:', response.status, response.statusText);
-                alert('Error creating list.');
-            }
-        } catch (error) {
-            console.error('Error getting user token:', error);
-        }
-
-        onClose();
-    };
 
     const handleSearch = async (e) => {
         e.preventDefault();
@@ -103,20 +71,54 @@ const CreateList = ({ onClose }) => {
         const heroIndex = heroesCollection.findIndex(hero => hero.name === selectedHero.name);
 
         if (heroIndex === -1) {
-            // Hero not in the list, add it
             setHeroesCollection(prevHeroes => [...prevHeroes, selectedHero]);
         } else {
-            // Hero is in the list, remove it
             const updatedHeroes = [...heroesCollection];
             updatedHeroes.splice(heroIndex, 1);
             setHeroesCollection(updatedHeroes);
         }
     };
 
+    const handleSave = async () => {
+        try {
+            // Check if editedListName is not empty
+            if (editedListName.trim() === '') {
+                console.error('List name is empty');
+                return;
+            }
+            // Make a request to update the list on the server using editedListId
+            const response = await fetch(`/superhero-lists/${listId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: editedListName,
+                    description,
+                    visibility,
+                    // Include heroes in the body if needed
+                }),
+            });
+
+            if (response.ok) {
+                onSave();
+                onClose();
+            } else {
+                console.error('Error updating list:', response.status, response.statusText);
+            }
+        } catch (error) {
+            console.error('Error updating list:', error);
+        }
+    };
+
+
+
+
+
     return (
         <div className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-md bg-opacity-50 bg-black">
             <div className="bg-white w-full max-w-md p-6 rounded-md shadow-md">
-                <h2 className="text-2xl font-semibold mb-4">Create a New List</h2>
+                <h2 className="text-2xl font-semibold mb-4">Edit Your List</h2>
 
                 <form onSubmit={handleSearch}>
                     <div className="mb-4">
@@ -124,10 +126,10 @@ const CreateList = ({ onClose }) => {
                             List Name:
                         </label>
                         <input
-                            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:border-blue-500"
+                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:border-blue-500 ${editedListName.length < minLength ? 'border-red-500' : ''}`}
                             type="text"
-                            value={listName}
-                            onChange={(e) => setListName(e.target.value)}
+                            value={editedListName}
+                            onChange={(e) => setEditedListName(e.target.value)}
                         />
                     </div>
                     <div className="mb-4">
@@ -197,9 +199,9 @@ const CreateList = ({ onClose }) => {
                     <button
                         className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:shadow-outline-blue"
                         type="button"
-                        onClick={handleCreateList}
+                        onClick={handleSave}
                     >
-                        Create List
+                        Update List
                     </button>
                     <button
                         className="ml-2 text-gray-600 hover:text-gray-800"
@@ -213,4 +215,4 @@ const CreateList = ({ onClose }) => {
     );
 };
 
-export default CreateList;
+export default EditList;

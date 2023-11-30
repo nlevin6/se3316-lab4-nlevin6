@@ -6,6 +6,7 @@ const cors = require('cors');
 const port = 3000;
 const bodyParser = require('body-parser');
 const admin = require('firebase-admin');
+const crypto = require('crypto');
 
 const superheroInfoPath = path.join(__dirname, 'superhero_info.json');
 const superheroPowersPath = path.join(__dirname, 'superhero_powers.json');
@@ -14,6 +15,10 @@ const superheroListsPath = path.join(__dirname, 'superhero_lists.json');
 let superheroLists = [];//all user created lists
 
 let superheroData = [];//all superhero data
+
+function generateRandomId() {
+    return crypto.randomBytes(8).toString('hex');
+}
 
 fs.readFile(superheroListsPath, 'utf8', (err, data) => {
     if (err) {
@@ -273,31 +278,49 @@ app.get('/superhero-lists', extractUserFromToken, (req, res) => {
     res.json({lists: superheroLists.map(list => ({...list, userId}))});
 });
 
+app.get('/superhero-lists/:listId', (req, res) => {
+    const { listId } = req.params;
+    const list = superheroLists.find(list => list.id === parseInt(listId));
+
+
+    if (list) {
+        res.json({ list });
+    } else {
+        res.status(404).json({ error: `List with ID "${listId}" not found` });
+    }
+});
+
+
 
 // POST endpoint to create a superhero list
 app.post('/superhero-lists', extractUserFromToken, (req, res) => {
     const { listName, description, superheroes, visibility } = req.body;
-    const {userId} = req.user;
+    const { userId } = req.user;
     console.log("userId in POST request: " + userId);
 
     const listExists = checkIfListExists(listName, userId);
 
     if (listExists) {
-        return res.status(400).json({error: 'List name already exists'});
+        return res.status(400).json({ error: 'List name already exists' });
     }
 
-    saveSuperheroList(listName, description, visibility, userId, superheroes);
+    const { listId } = saveSuperheroList(listName, description, visibility, userId, superheroes);
 
-    res.status(200).json({message: 'Superhero list created successfully'});
+    res.status(200).json({ message: 'Superhero list created successfully', listId });
 });
 
+
 function saveSuperheroList(listName, description, visibility, userId, superheroes) {
+    // Check if the list name already exists
     if (checkIfListExists(listName, userId)) {
         throw new Error('List name already exists');
     }
 
+    const newListId = generateRandomId();
+
     const newList = {
         userId,
+        id: newListId,
         name: listName,
         description,
         visibility,
@@ -306,7 +329,8 @@ function saveSuperheroList(listName, description, visibility, userId, superheroe
 
     superheroLists.push(newList);
 
-    //save superhero lists to a database here
+    // Save superhero lists to a database here
+
     fs.writeFile(superheroListsPath, JSON.stringify(superheroLists, null, 2), (err) => {
         if (err) {
             console.error('Error saving superhero lists to file:', err);
@@ -315,6 +339,8 @@ function saveSuperheroList(listName, description, visibility, userId, superheroe
             console.log('Superhero lists saved to file successfully');
         }
     });
+
+    return { listId: newListId };
 }
 
 
@@ -342,6 +368,7 @@ app.put('/add-to-list', (req, res) => {
 //fetch superheroes in a selected list
 app.get('/fetch-superheroes-in-list', (req, res) => {
     const {listName} = req.query;
+
 
     if (listName) {
         const selectedList = superheroLists.find(list => list.name === listName);
@@ -379,6 +406,56 @@ app.delete('/superhero-lists/:listName', (req, res) => {
         res.status(404).json({ error: `List "${listName}" doesn't exist` });
     }
 });
+
+app.get('/superhero-lists/:listName', (req, res) => {
+    const { listName } = req.params;
+    const list = superheroLists.find(list => list.name === listName);
+    console.log('Received request for list details. List name:', listName);
+
+    if (list) {
+        res.json({ list });
+    } else {
+        res.status(404).json({ error: `List "${listName}" not found` });
+    }
+});
+
+
+app.put('/superhero-lists/:listId', extractUserFromToken, (req, res) => {
+    const { listId } = req.params;
+    const { name, description, visibility, heroes } = req.body;
+    const { userId } = req.user;
+
+    try {
+        const updatedList = updateSuperheroList(listId, userId, name, description, visibility, heroes);
+
+        if (updatedList) {
+            res.status(200).json({ message: 'Superhero list updated successfully' });
+        } else {
+            res.status(404).json({ error: `List with ID "${listId}" not found or unauthorized` });
+        }
+    } catch (error) {
+        console.error('Error updating superhero list:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+function updateSuperheroList(listId, userId, name, description, visibility, heroes) {
+    const listIndex = superheroLists.findIndex(list => list.id === listId && list.userId === userId);
+
+    if (listIndex !== -1) {
+        superheroLists[listIndex].name = name || superheroLists[listIndex].name;
+        superheroLists[listIndex].description = description || superheroLists[listIndex].description;
+        superheroLists[listIndex].visibility = visibility || superheroLists[listIndex].visibility;
+        superheroLists[listIndex].heroes = heroes || superheroLists[listIndex].heroes;
+
+        // Save superhero lists to a database or JSON file here
+
+        return superheroLists[listIndex];
+    }
+
+    return null;
+}
+
 
 
 //port listen message
