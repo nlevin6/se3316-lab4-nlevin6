@@ -4,6 +4,8 @@ import SearchForm from "./components/SearchForm";
 import SearchResults from "./components/SearchResults";
 import CreateList from "./components/CreateList";
 import {Link} from "react-router-dom";
+import ChangePasswordPage from "./ChangePasswordPage";
+import {Route } from 'react-router-dom';
 
 const SuperheroSearchPage = () => {
     const [searchResults, setSearchResults] = useState([]);
@@ -69,6 +71,14 @@ const SuperheroSearchPage = () => {
                     onClick={handleLogout}>
                 Logout
             </button>
+            {user && (
+            <Link
+                to="/change-password"
+                className="bg-green-500 text-white py-2 px-4 rounded mb-2 absolute top-4 right-24"
+            >
+                Settings
+            </Link>
+            )}
             <h1 className="text-3xl font-bold mb-6">Superhero Codex</h1>
             {user && (
                 <button
@@ -86,6 +96,9 @@ const SuperheroSearchPage = () => {
             </Link>
 
             {isCreateListOpen && <CreateList onClose={handleCloseCreateList} />}
+
+
+
             <SearchForm onSearch={handleSearch}/>
             <SearchResults results={searchResults}/>
         </div>

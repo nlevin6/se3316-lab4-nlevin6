@@ -6,6 +6,7 @@ import LoginPage from './LoginPage';
 import SignupPage from './SignupPage';
 import SuperheroSearchPage from './SuperheroSearchPage';
 import ViewListsPage from './ViewListsPage';
+import ChangePasswordPage from "./ChangePasswordPage";
 
 const auth = getAuth();
 
@@ -31,6 +32,7 @@ const App = () => {
                 <Route path="/superhero-search" element={<SuperheroSearchPage />} />
                 <Route path='/signup' element={<SignupPage />} />
                 <Route path='view-lists' element={<ViewListsPage />} />
+                <Route path='/change-password' element={<ChangePasswordPage />} />
             </Routes>
         </Router>
     );
