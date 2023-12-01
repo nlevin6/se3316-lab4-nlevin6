@@ -36,7 +36,6 @@ fs.readFile(superheroListsPath, 'utf8', (err, data) => {
 });
 
 
-
 fs.readFile(superheroInfoPath, 'utf8', (err, data) => {
     if (err) {
         console.error('Error reading superhero_info.json file: ', err);
@@ -139,16 +138,16 @@ app.get('/superhero/', (req, res) => {
 
 //this one is being used in the createList component
 app.get('/superhero-search', (req, res) => {
-    const { query } = req.query;
+    const {query} = req.query;
 
     if (!query) {
-        return res.status(400).json({ error: 'Search query is required' });
+        return res.status(400).json({error: 'Search query is required'});
     }
 
     fs.readFile(superheroInfoPath, 'utf8', (err, data) => {
         if (err) {
             console.error('Error reading superhero_info.json file: ', err);
-            return res.status(500).json({ error: 'Error reading superhero_info.json file' });
+            return res.status(500).json({error: 'Error reading superhero_info.json file'});
         }
 
         try {
@@ -156,11 +155,11 @@ app.get('/superhero-search', (req, res) => {
             const matchingHeroes = allHeroes.filter(hero => hero.name.toLowerCase().includes(query.toLowerCase()));
 
             //return only name and publisher
-            const searchResults = matchingHeroes.map(hero => ({ name: hero.name, Publisher: hero.Publisher }));
+            const searchResults = matchingHeroes.map(hero => ({name: hero.name, Publisher: hero.Publisher}));
             res.json(searchResults);
         } catch (error) {
             console.error('Error parsing superhero_info.json:', error);
-            res.status(500).json({ error: 'Error parsing superhero_info.json' });
+            res.status(500).json({error: 'Error parsing superhero_info.json'});
         }
     });
 });
@@ -234,21 +233,23 @@ app.get('/publishers', (req, res) => {
 
 //get the first n number of matching superhero IDs for a given search pattern matching a given information field
 app.get('/superhero/search', (req, res) => {
-    const {publisher, name, n, race, power} = req.query;
+    const { publisher, name, n, race, power } = req.query;
     console.log('Received search request with parameters:', req.query);
 
     let filteredHeroes = superheroData.filter(hero => {
         const byPublisher = (publisher && publisher !== 'All') ? hero.Publisher.toLowerCase() === publisher.toLowerCase() : true;
         const byName = name ? hero.name.toLowerCase().includes(name.toLowerCase()) : true;
-        const byRace = race ? hero.Race.toLowerCase() === race.toLowerCase() : true;
+        const byRace = race ? hero.Race && hero.Race.toLowerCase().includes(race.toLowerCase()) : true;
         let byPower = true;
 
-        //im keeping this case sensitive. too much work to make it not case sensitive. still works though
         if (power) {
             const powersData = require('./superhero_powers.json');
-            const heroPowers = powersData.find(data => data.hero_names === hero.name);
+            const heroPowers = powersData.find(data => data.hero_names === hero.name) || {};
 
-            byPower = heroPowers && heroPowers[power] === "True";
+            // Check if the hero has the power and its value is 'true'
+            byPower = Object.entries(heroPowers)
+                .filter(([powerName, powerValue]) => powerName !== 'hero_names')
+                .some(([powerName, powerValue]) => powerName.toLowerCase().includes(power.toLowerCase()) && powerValue.toLowerCase() === 'true');
         }
 
         return byPublisher && byName && byRace && byPower;
@@ -257,7 +258,7 @@ app.get('/superhero/search', (req, res) => {
     console.log('Filtered superheroes:', filteredHeroes);
 
     if (filteredHeroes.length === 0) {
-        res.status(404).json({message: 'No matching superheroes found'});
+        res.status(404).json({ message: 'No matching superheroes found' });
     } else {
         const result = filteredHeroes.map(hero => ({
             id: hero.id,
@@ -273,13 +274,11 @@ app.get('/superhero/search', (req, res) => {
             Weight: hero.Weight
         }));
 
-        // if (n && parseInt(n) > 0) {
-        //     result = result.slice(0, parseInt(n));
-        // }
-        res.json({matchingSuperheroes: result});
-
+        res.json({ matchingSuperheroes: result });
     }
 });
+
+
 
 app.get('/superhero-lists', extractUserFromToken, (req, res) => {
     const {userId} = req.user;
@@ -288,34 +287,33 @@ app.get('/superhero-lists', extractUserFromToken, (req, res) => {
 });
 
 app.get('/superhero-lists/:listId', (req, res) => {
-    const { listId } = req.params;
+    const {listId} = req.params;
     const list = superheroLists.find(list => list.id === listId);
     console.log("backend list ID: " + listId);
 
     if (list) {
-        res.json({ list });
+        res.json({list});
     } else {
-        res.status(404).json({ error: `List with ID "${listId}" not found` });
+        res.status(404).json({error: `List with ID "${listId}" not found`});
     }
 });
 
 
-
 // POST endpoint to create a superhero list
 app.post('/superhero-lists', extractUserFromToken, (req, res) => {
-    const { listName, description, superheroes, visibility } = req.body;
-    const { userId } = req.user;
+    const {listName, description, superheroes, visibility} = req.body;
+    const {userId} = req.user;
     console.log("userId in POST request: " + userId);
 
     const listExists = checkIfListExists(listName, userId);
 
     if (listExists) {
-        return res.status(400).json({ error: 'List name already exists' });
+        return res.status(400).json({error: 'List name already exists'});
     }
 
-    const { listId } = saveSuperheroList(listName, description, visibility, userId, superheroes);
+    const {listId} = saveSuperheroList(listName, description, visibility, userId, superheroes);
 
-    res.status(200).json({ message: 'Superhero list created successfully', listId });
+    res.status(200).json({message: 'Superhero list created successfully', listId});
 });
 
 
@@ -352,9 +350,8 @@ function saveSuperheroList(listName, description, visibility, userId, superheroe
         }
     });
 
-    return { listId: newListId };
+    return {listId: newListId};
 }
-
 
 
 // Update checkIfListExists function to include userId
@@ -399,7 +396,7 @@ app.get('/fetch-superheroes-in-list', (req, res) => {
 
 //delete a list of superheroes with a given name
 app.delete('/superhero-lists/:id', (req, res) => {
-    const { id } = req.params;
+    const {id} = req.params;
     const listIndex = superheroLists.findIndex(list => list.id === id);
 
     if (listIndex !== -1) {
@@ -410,34 +407,34 @@ app.delete('/superhero-lists/:id', (req, res) => {
         fs.writeFile(superheroListsPath, JSON.stringify(superheroLists), (err) => {
             if (err) {
                 console.error('Error writing superhero_lists.json file:', err);
-                res.status(500).json({ error: 'Error updating superhero_lists.json file' });
+                res.status(500).json({error: 'Error updating superhero_lists.json file'});
             } else {
-                res.status(200).json({ message: `List with ID "${id}" and its contents deleted successfully` });
+                res.status(200).json({message: `List with ID "${id}" and its contents deleted successfully`});
             }
         });
     } else {
-        res.status(404).json({ error: `List with ID "${id}" doesn't exist` });
+        res.status(404).json({error: `List with ID "${id}" doesn't exist`});
     }
 });
 
 
 app.get('/superhero-lists/:listName', (req, res) => {
-    const { listName } = req.params;
+    const {listName} = req.params;
     const list = superheroLists.find(list => list.name === listName);
     console.log('Received request for list details. List name:', listName);
 
     if (list) {
-        res.json({ list });
+        res.json({list});
     } else {
-        res.status(404).json({ error: `List "${listName}" not found` });
+        res.status(404).json({error: `List "${listName}" not found`});
     }
 });
 
 
 app.put('/superhero-lists/:listId', extractUserFromToken, async (req, res) => {
-    const { listId } = req.params;
-    const { name, description, visibility, superheroes } = req.body;
-    const { userId } = req.user;
+    const {listId} = req.params;
+    const {name, description, visibility, superheroes} = req.body;
+    const {userId} = req.user;
     const updateTimestamp = new Date().toISOString();
 
     try {
@@ -449,14 +446,13 @@ app.put('/superhero-lists/:listId', extractUserFromToken, async (req, res) => {
                 modifiedAt: updateTimestamp,
             });
         } else {
-            res.status(404).json({ error: `List with ID "${listId}" not found or unauthorized` });
+            res.status(404).json({error: `List with ID "${listId}" not found or unauthorized`});
         }
     } catch (error) {
         console.error('Error updating superhero list:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        res.status(500).json({error: 'Internal server error'});
     }
 });
-
 
 
 function updateSuperheroList(listId, userId, name, description, visibility, superheroes) {
@@ -485,38 +481,37 @@ function updateSuperheroList(listId, userId, name, description, visibility, supe
 }
 
 app.post('/superhero-lists/:id/ratings', extractUserFromToken, (req, res) => {
-    const { id } = req.params;
-    const { userId } = req.user;
-    const { rating, comment } = req.body;
+    const {id} = req.params;
+    const {userId} = req.user;
+    const {rating, comment} = req.body;
 
     const listIndex = superheroLists.findIndex((list) => list.id === id);
 
     if (listIndex !== -1) {
-        superheroLists[listIndex].ratings.push({ userId, rating, comment });
+        superheroLists[listIndex].ratings.push({userId, rating, comment});
 
         // Update superheroLists JSON file
         fs.writeFile(superheroListsPath, JSON.stringify(superheroLists), (err) => {
             if (err) {
                 console.error('Error writing superhero_lists.json file:', err);
-                res.status(500).json({ error: 'Error updating superhero_lists.json file' });
+                res.status(500).json({error: 'Error updating superhero_lists.json file'});
             } else {
-                res.status(200).json({ message: `Rating added to list with ID "${id}" successfully` });
+                res.status(200).json({message: `Rating added to list with ID "${id}" successfully`});
             }
         });
     } else {
-        res.status(404).json({ error: `List with ID "${id}" not found` });
+        res.status(404).json({error: `List with ID "${id}" not found`});
     }
 });
 
 
-
 app.get('/superhero-lists/:id/ratings', (req, res) => {
-    const { id } = req.params;
+    const {id} = req.params;
     const list = superheroLists.find(list => list.id === id);
     if (list) {
         res.json(list.ratings);
     } else {
-        res.status(404).json({ error: `List with ID "${id}" not found` });
+        res.status(404).json({error: `List with ID "${id}" not found`});
     }
 });
 
