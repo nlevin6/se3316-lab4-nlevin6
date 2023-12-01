@@ -63,6 +63,16 @@
       }
     ],
     "createdAt": "2023-11-30T23:03:13.417Z",
-    "modifiedAt": "2023-11-30T23:24:59.294Z"
+    "modifiedAt": "2023-12-01T22:33:47.169Z"
+  },
+  {
+    "id": "ddc1440024b7560b",
+    "name": "asdasdad",
+    "description": "3234aaa",
+    "visibility": "private",
+    "superheroes": [],
+    "ratings": [],
+    "createdAt": "2023-12-01T22:27:41.885Z",
+    "modifiedAt": "2023-12-01T22:33:33.921Z"
   }
 ]

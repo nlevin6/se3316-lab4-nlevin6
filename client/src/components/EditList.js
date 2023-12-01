@@ -1,6 +1,6 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 
-const EditList = ({listId, initialListName, onClose, onSave}) => {
+const EditList = ({ listId, initialListName, onClose, onSave }) => {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [editedListName, setEditedListName] = useState('');
@@ -75,6 +75,11 @@ const EditList = ({listId, initialListName, onClose, onSave}) => {
         }
     };
 
+    const setEditedListNameWithSanitization = (input) => {
+        // Remove any characters that are not regular or capital letters
+        const sanitizedInput = input.replace(/[^a-zA-Z]/g, '');
+        setEditedListName(sanitizedInput);
+    };
 
     const handleSave = async () => {
         try {
@@ -131,7 +136,7 @@ const EditList = ({listId, initialListName, onClose, onSave}) => {
                             className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:border-blue-500 ${editedListName.length < minLength ? 'border-red-500' : ''}`}
                             type="text"
                             value={editedListName}
-                            onChange={(e) => setEditedListName(e.target.value)}
+                            onChange={(e) => setEditedListNameWithSanitization(e.target.value)}
                         />
                     </div>
 

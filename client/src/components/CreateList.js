@@ -26,6 +26,12 @@ const CreateList = ({ onClose }) => {
         };
     }, []);
 
+    const setListNameWithSanitization = (input) => {
+        // Remove any characters that are not regular or capital letters
+        const sanitizedInput = input.replace(/[^a-zA-Z]/g, '');
+        setListName(sanitizedInput);
+    };
+
     const handleCreateList = async () => {
         if (!listName) {
             alert('Please enter a list name.');
@@ -45,28 +51,9 @@ const CreateList = ({ onClose }) => {
                 console.log('User is not authenticated. Unable to create a list.');
                 return;
             }
+
             const tokenResult = await getIdTokenResult(user);
             const token = tokenResult.token;
-            const response = await fetch(`/user-lists-count`, {
-                method: 'GET',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                const userListsCount = data.count || 0;
-
-                if (userListsCount >= 20) {
-                    alert('List limit reached. You can create a maximum of 20 lists.');
-                    return;
-                }
-            } else {
-                console.error('Error checking user lists count:', response.status, response.statusText);
-                alert('Error checking user lists count.');
-                return;
-            }
 
             console.log('Authenticated User. Token:', token);
             console.log({ listName, description, heroesCollection, visibility });
@@ -94,14 +81,12 @@ const CreateList = ({ onClose }) => {
                 console.error('Error creating list:', createListResponse.status, createListResponse.statusText);
                 alert('Error creating list.');
             }
-
         } catch (error) {
             console.error('Error getting user token:', error);
         }
 
         onClose();
     };
-
 
     const handleSearch = async (e) => {
         e.preventDefault();
@@ -147,7 +132,7 @@ const CreateList = ({ onClose }) => {
                             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:border-blue-500"
                             type="text"
                             value={listName}
-                            onChange={(e) => setListName(e.target.value)}
+                            onChange={(e) => setListNameWithSanitization(e.target.value)}
                         />
                     </div>
                     <div className="mb-4">
@@ -213,6 +198,7 @@ const CreateList = ({ onClose }) => {
                         )}
                     </div>
                 </form>
+
                 <div className="flex justify-end mt-4">
                     <button
                         className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:shadow-outline-blue"

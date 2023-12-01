@@ -246,7 +246,6 @@ app.get('/superhero/search', (req, res) => {
             const powersData = require('./superhero_powers.json');
             const heroPowers = powersData.find(data => data.hero_names === hero.name) || {};
 
-            // Check if the hero has the power and its value is 'true'
             byPower = Object.entries(heroPowers)
                 .filter(([powerName, powerValue]) => powerName !== 'hero_names')
                 .some(([powerName, powerValue]) => powerName.toLowerCase().includes(power.toLowerCase()) && powerValue.toLowerCase() === 'true');

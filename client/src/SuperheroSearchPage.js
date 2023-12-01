@@ -4,8 +4,6 @@ import SearchForm from "./components/SearchForm";
 import SearchResults from "./components/SearchResults";
 import CreateList from "./components/CreateList";
 import {Link} from "react-router-dom";
-import ChangePasswordPage from "./ChangePasswordPage";
-import {Route } from 'react-router-dom';
 
 const SuperheroSearchPage = () => {
     const [searchResults, setSearchResults] = useState([]);
@@ -94,11 +92,7 @@ const SuperheroSearchPage = () => {
             >
                 View Lists
             </Link>
-
             {isCreateListOpen && <CreateList onClose={handleCloseCreateList} />}
-
-
-
             <SearchForm onSearch={handleSearch}/>
             <SearchResults results={searchResults}/>
         </div>

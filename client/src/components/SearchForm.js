@@ -1,6 +1,6 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 
-const SearchForm = ({onSearch}) => {
+const SearchForm = ({ onSearch }) => {
     const [searchParams, setSearchParams] = useState({
         name: '',
         power: '',
@@ -17,9 +17,15 @@ const SearchForm = ({onSearch}) => {
             .catch(error => console.error('Error fetching publishers:', error));
     }, []);
 
+    const sanitizeInput = (input) => {
+        // Regular expression to match only letters and capital letters
+        const regex = /^[A-Za-z]+$/;
+        return input.replace(/[^A-Za-z]/g, ''); // Remove characters that do not match the regex
+    };
+
     const handleInputChange = (e) => {
-        const {name, value} = e.target;
-        setSearchParams((prevParams) => ({...prevParams, [name]: value}));
+        const { name, value } = e.target;
+        setSearchParams((prevParams) => ({ ...prevParams, [name]: sanitizeInput(value) }));
     };
 
     const handleSubmit = (e) => {
@@ -63,8 +69,6 @@ const SearchForm = ({onSearch}) => {
             <button type="submit" className="bg-blue-500 text-white py-2 px-4 rounded mb-2">Search</button>
         </form>
     );
-
-
 };
 
 export default SearchForm;
