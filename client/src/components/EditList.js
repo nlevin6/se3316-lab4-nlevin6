@@ -31,7 +31,6 @@ const EditList = ({ listId, initialListName, onClose, onSave }) => {
                     setHeroesCollection(listDetails.superheroes || []);
                     setModifiedAt(listDetails.modifiedAt);
 
-                    // If initialListName is provided, set it to editedListName
                     if (initialListName) {
                         setEditedListName(initialListName);
                     }
@@ -65,10 +64,8 @@ const EditList = ({ listId, initialListName, onClose, onSave }) => {
         const heroIndex = heroesCollection.findIndex(hero => hero.name === selectedHero.name);
 
         if (heroIndex === -1) {
-            // Add hero to the collection
             setHeroesCollection(prevHeroes => [...prevHeroes, selectedHero]);
         } else {
-            // Remove hero from the collection
             const updatedHeroes = [...heroesCollection];
             updatedHeroes.splice(heroIndex, 1);
             setHeroesCollection(updatedHeroes);
@@ -76,20 +73,17 @@ const EditList = ({ listId, initialListName, onClose, onSave }) => {
     };
 
     const setEditedListNameWithSanitization = (input) => {
-        // Remove any characters that are not regular or capital letters
         const sanitizedInput = input.replace(/[^a-zA-Z]/g, '');
         setEditedListName(sanitizedInput);
     };
 
     const handleSave = async () => {
         try {
-            // Check if editedListName is not empty
             if (editedListName.trim() === '') {
                 console.error('List name is empty');
                 return;
             }
 
-            // Make a request to update the list on the server using editedListId
             const response = await fetch(`/superhero-lists/${listId}`, {
                 method: 'PUT',
                 headers: {
