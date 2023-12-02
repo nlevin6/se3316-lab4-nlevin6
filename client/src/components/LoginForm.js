@@ -105,12 +105,6 @@ const LoginForm = () => {
                     Sign Up
                 </button>
 
-                {userRole === 'admin' && (
-                    <Link to="/admin-panel" className="text-blue-500 mb-2">
-                        Admin Panel
-                    </Link>
-                )}
-
                 <button
                     type="button"
                     className="bg-gray-500 text-white py-2 px-4 rounded mb-2"

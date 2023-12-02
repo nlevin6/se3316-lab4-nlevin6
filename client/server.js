@@ -15,8 +15,6 @@ const superheroListsPath = path.join(__dirname, 'superhero_lists.json');
 let superheroLists = [];//all user created lists
 let superheroData = [];//all superhero data
 
-const uid = 'JzsvhPWP83hSVQab6z8mdpHk8ij2'; //admin UID
-
 
 function generateRandomId() {
     return crypto.randomBytes(8).toString('hex');
@@ -53,17 +51,6 @@ admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
 });
 
-//verify admin
-admin.auth().updateUser(uid, {
-    emailVerified: true,
-})
-    .then((userRecord) => {
-        console.log('Successfully marked user as verified:', userRecord.toJSON());
-    })
-    .catch((error) => {
-        console.error('Error marking user as verified:', error);
-    });
-
 // Function to decode and verify Firebase JWT token
 const decodeUserFromToken = (token) => {
     return new Promise((resolve, reject) => {
@@ -74,13 +61,17 @@ const decodeUserFromToken = (token) => {
 
         admin.auth().verifyIdToken(token)
             .then((decodedToken) => {
-                resolve(decodedToken);
+                // Check if the user is an admin
+                const role = decodedToken.admin === true ? 'admin' : 'user';
+                resolve({...decodedToken, role});
             })
             .catch((error) => {
                 reject('Invalid token: ' + error.message);
             });
     });
 };
+
+
 
 module.exports = {
     decodeUserFromToken,
@@ -100,29 +91,22 @@ const extractUserFromToken = async (req, res, next) => {
         if (token) {
             const user = await decodeUserFromToken(token);
 
-            // Check if the user is the admin
-            if (user && user.email === 'admin@lab4.com' && user.admin) {
-                console.log('Admin login successful');
-                // You can perform additional actions for admin login here if needed
-                req.user = user;
-            } else {
-                console.log('Regular user login');
-                req.user = user || {};
-            }
+            req.user = {...user, role: user.role || 'user'};
         } else {
-            req.user = {};
+            req.user = {role: 'user'};
         }
     } catch (error) {
         console.error('Error decoding token:', error);
-        req.user = {}; // Set to an empty object if there is an error decoding the token
+        req.user = {role: 'user'};
     }
 
     next();
 };
 
+
 const createCustomToken = (email) => {
     const claims = {
-        admin: true,
+        admin: email === 'admin@lab4.com',
     };
 
     return admin.auth().createCustomToken(email, claims);
@@ -138,29 +122,20 @@ app.use((req, res, next) => {
 app.use(bodyParser.json());
 
 app.post('/login', async (req, res) => {
-    const { email, password } = req.body;
-
+    const {email, password} = req.body;
     if (email === 'admin@lab4.com' && password === 'admin1234') {
         try {
             const customToken = await createCustomToken(email);
             console.log("admin token: " + customToken);
-            res.status(200).json({ token: customToken, role: 'admin' });
+            res.status(200).json({token: customToken});
         } catch (error) {
             console.error('Error creating custom token:', error);
-            res.status(500).json({ error: 'Internal server error' });
+            res.status(500).json({error: 'Internal server error'});
         }
     } else {
-        try {
-            const customToken = await createCustomToken(email);
-            console.log("user token: " + customToken);
-            res.status(200).json({ token: customToken, role: 'user' });
-        } catch (error) {
-            console.error('Error creating custom token:', error);
-            res.status(500).json({ error: 'Internal server error' });
-        }
+        res.status(401).json({error: 'Invalid credentials'});
     }
 });
-
 
 app.get('/superhero/', (req, res) => {
     const superheroName = req.query.name;

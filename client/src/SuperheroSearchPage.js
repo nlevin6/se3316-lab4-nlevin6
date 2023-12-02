@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
+import React, {useState, useEffect} from 'react';
+import {getAuth, onAuthStateChanged, signOut} from 'firebase/auth';
 import SearchForm from "./components/SearchForm";
 import SearchResults from "./components/SearchResults";
 import CreateList from "./components/CreateList";
@@ -9,16 +9,25 @@ const SuperheroSearchPage = () => {
     const [searchResults, setSearchResults] = useState([]);
     const [user, setUser] = useState(null);
     const [isCreateListOpen, setIsCreateListOpen] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const authInstance = getAuth();
         const unsubscribe = onAuthStateChanged(authInstance, (user) => {
+            console.log("User data:", user);
+            if (user) {
+                user.getIdTokenResult().then((idTokenResult) => {
+                    console.log("ID Token Result:", idTokenResult);
+                });
+            }
             setUser(user);
+            setLoading(false);
         });
         return () => {
             unsubscribe();
         };
     }, []);
+
 
     const handleOpenCreateList = () => {
         setIsCreateListOpen(true);
@@ -64,22 +73,21 @@ const SuperheroSearchPage = () => {
     };
 
 
-
     return (
         <div>
             <button className="bg-red-500 text-white py-2 px-4 rounded mb-2 absolute top-4 right-4"
                     onClick={handleLogout}>
                 Logout
             </button>
-            {user && (
-            <Link
-                to="/change-password"
-                className="bg-green-500 text-white py-2 px-4 rounded mb-2 absolute top-4 right-24"
-            >
-                Settings
-            </Link>
+            {!loading && user && (
+                <Link
+                    to="/change-password"
+                    className="bg-green-500 text-white py-2 px-4 rounded mb-2 absolute top-4 right-24"
+                >
+                    Settings
+                </Link>
             )}
-            {user && user.email === 'admin@lab4.com' && (
+            {user.role === 'admin' && (
                 <Link
                     to="/admin"
                     className="bg-yellow-600 text-white py-2 px-4 rounded mb-2 absolute top-4 right-34"
@@ -88,7 +96,7 @@ const SuperheroSearchPage = () => {
                 </Link>
             )}
             <h1 className="text-3xl font-bold mb-6">Superhero Codex</h1>
-            {user && (
+            {!loading && user && (
                 <button
                     className="bg-blue-500 text-white py-2 px-4 rounded mb-2"
                     onClick={handleOpenCreateList}
@@ -102,7 +110,7 @@ const SuperheroSearchPage = () => {
             >
                 View Lists
             </Link>
-            {isCreateListOpen && <CreateList onClose={handleCloseCreateList} />}
+            {isCreateListOpen && <CreateList onClose={handleCloseCreateList}/>}
             <SearchForm onSearch={handleSearch}/>
             <SearchResults results={searchResults}/>
         </div>
