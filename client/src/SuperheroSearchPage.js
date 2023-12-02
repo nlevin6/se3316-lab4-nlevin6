@@ -8,6 +8,7 @@ import {Link} from "react-router-dom";
 const SuperheroSearchPage = () => {
     const [searchResults, setSearchResults] = useState([]);
     const [user, setUser] = useState(null);
+    const [isAdmin, setIsAdmin] = useState(null);
     const [isCreateListOpen, setIsCreateListOpen] = useState(false);
     const [loading, setLoading] = useState(true);
 
@@ -17,6 +18,7 @@ const SuperheroSearchPage = () => {
             console.log("User data:", user);
             if (user) {
                 user.getIdTokenResult().then((idTokenResult) => {
+                    setIsAdmin(idTokenResult.claims.admin);
                     console.log("ID Token Result:", idTokenResult);
                 });
             }
@@ -87,7 +89,7 @@ const SuperheroSearchPage = () => {
                     Settings
                 </Link>
             )}
-            {user && user.role === 'admin' && (
+            {user && isAdmin &&  (
                 <Link
                     to="/admin"
                     className="bg-yellow-600 text-white py-2 px-4 rounded mb-2 absolute top-4 right-34"
