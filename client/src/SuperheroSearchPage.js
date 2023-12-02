@@ -15,11 +15,9 @@ const SuperheroSearchPage = () => {
     useEffect(() => {
         const authInstance = getAuth();
         const unsubscribe = onAuthStateChanged(authInstance, (user) => {
-            console.log("User data:", user);
             if (user) {
                 user.getIdTokenResult().then((idTokenResult) => {
                     setIsAdmin(idTokenResult.claims.admin);
-                    console.log("ID Token Result:", idTokenResult);
                 });
             }
             setUser(user);

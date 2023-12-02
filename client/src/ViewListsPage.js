@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {getAuth} from 'firebase/auth';
+import {getAuth, onAuthStateChanged} from 'firebase/auth';
 import EditList from './components/EditList';
 
 const ViewListsPage = () => {
@@ -8,10 +8,8 @@ const ViewListsPage = () => {
     const [editList, setEditList] = useState(null);
     const [ratingValue, setRatingValue] = useState(1);
     const [commentValue, setCommentValue] = useState('');
-
-    const authInstance = getAuth();
-    const user = authInstance.currentUser;
-
+    const [isAdmin, setIsAdmin] = useState(null);
+    const [ user, setUser] = useState(null);
 
     const fetchSuperheroLists = async () => {
         try {
@@ -33,7 +31,22 @@ const ViewListsPage = () => {
 
     useEffect(() => {
         fetchSuperheroLists();
+
+        const authInstance = getAuth();
+        const unsubscribe = onAuthStateChanged(authInstance, (authUser) => {
+            if (authUser) {
+                authUser.getIdTokenResult().then((idTokenResult) => {
+                    setIsAdmin(idTokenResult.claims.admin);
+                });
+            }
+            setUser(authUser);
+        });
+
+        return () => {
+            unsubscribe();
+        };
     }, []);
+
 
     const handleDeleteList = async (listId) => {
         try {
@@ -60,6 +73,31 @@ const ViewListsPage = () => {
     const handleGoBack = () => {
         window.history.back();
     };
+
+    const handleToggleReviewVisibility = async (listId, ratingId, isHidden) => {
+        try {
+            const response = await fetch(`/superhero-lists/${listId}/ratings/toggle-visibility`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    ratingId,
+                    hidden: !isHidden,
+                }),
+            });
+
+            if (response.ok) {
+                fetchSuperheroLists();
+            } else {
+                console.error('Error toggling review visibility:', response.status, response.statusText);
+            }
+        } catch (error) {
+            console.error('Error toggling review visibility:', error);
+        }
+    };
+
+
 
     const handleEditList = async (listId) => {
         if (listId) {
@@ -139,10 +177,14 @@ const ViewListsPage = () => {
     };
 
     const isAuthenticated = user !== null;
+
+
     //this will show 20 lists to registered users and 10 lists to unregistered users
     const visibleLists = isAuthenticated
         ? lists.slice(0, 20)
         : lists.filter((list) => list.visibility === 'public').slice(0, 10);
+
+
 
     return (
         <div>
@@ -199,13 +241,24 @@ const ViewListsPage = () => {
                                     <h3 className="text-lg font-semibold">Ratings and Comments:</h3>
                                     <ul>
                                         {list.ratings.map((rating, ratingIndex) => (
-                                            <li key={ratingIndex}>
-                                                {rating.rating} stars - {rating.comment}
+                                            <li key={ratingIndex} className="flex items-center justify-between">
+                                                <div>
+                                                    {rating.rating} stars - {rating.comment}
+                                                </div>
+                                                {isAdmin && (
+                                                    <button
+                                                        onClick={() => handleToggleReviewVisibility(list.id, rating.id, rating.hidden)}
+                                                        className={`px-2 py-1 ${rating.hidden ? 'bg-yellow-600' : 'bg-yellow-500'} text-white rounded`}
+                                                    >
+                                                        {rating.hidden ? 'Unhide' : 'Hide'}
+                                                    </button>
+                                                )}
                                             </li>
                                         ))}
                                     </ul>
                                 </div>
                             )}
+
                             {isAuthenticated && list.visibility === 'public' && (
                                 <form onSubmit={(event) => handleSubmitRating(event, list.id)} className="mt-4">
                                     <div className="mb-4">

@@ -7,6 +7,7 @@ const port = 3000;
 const bodyParser = require('body-parser');
 const admin = require('firebase-admin');
 const crypto = require('crypto');
+const { v4: uuidv4 } = require('uuid');
 
 const superheroInfoPath = path.join(__dirname, 'superhero_info.json');
 const superheroPowersPath = path.join(__dirname, 'superhero_powers.json');
@@ -14,6 +15,8 @@ const superheroListsPath = path.join(__dirname, 'superhero_lists.json');
 
 let superheroLists = [];//all user created lists
 let superheroData = [];//all superhero data
+
+const adminUid = 'JzsvhPWP83hSVQab6z8mdpHk8ij2';
 
 
 function generateRandomId() {
@@ -507,28 +510,37 @@ function updateSuperheroList(listId, userId, name, description, visibility, supe
 }
 
 app.post('/superhero-lists/:id/ratings', extractUserFromToken, (req, res) => {
-    const {id} = req.params;
-    const {userId} = req.user;
-    const {rating, comment} = req.body;
+    const { id } = req.params;
+    const { userId } = req.user;
+    const { rating, comment } = req.body;
 
     const listIndex = superheroLists.findIndex((list) => list.id === id);
 
     if (listIndex !== -1) {
-        superheroLists[listIndex].ratings.push({userId, rating, comment});
+        const newRating = {
+            id: uuidv4(),
+            userId,
+            rating,
+            comment,
+            hidden: false,
+        };
+
+        superheroLists[listIndex].ratings.push(newRating);
 
         // Update superheroLists JSON file
         fs.writeFile(superheroListsPath, JSON.stringify(superheroLists), (err) => {
             if (err) {
                 console.error('Error writing superhero_lists.json file:', err);
-                res.status(500).json({error: 'Error updating superhero_lists.json file'});
+                res.status(500).json({ error: 'Error updating superhero_lists.json file' });
             } else {
-                res.status(200).json({message: `Rating added to list with ID "${id}" successfully`});
+                res.status(200).json({ message: `Rating added to list with ID "${id}" successfully` });
             }
         });
     } else {
-        res.status(404).json({error: `List with ID "${id}" not found`});
+        res.status(404).json({ error: `List with ID "${id}" not found` });
     }
 });
+
 
 
 app.get('/superhero-lists/:id/ratings', (req, res) => {
@@ -540,6 +552,74 @@ app.get('/superhero-lists/:id/ratings', (req, res) => {
         res.status(404).json({error: `List with ID "${id}" not found`});
     }
 });
+
+const createUser = async (email, password) => {
+    try {
+        const userRecord = await admin.auth().createUser({
+            email: email,
+            password: password,
+        });
+        console.log('Successfully created new user:', userRecord.uid);
+        return userRecord.uid;
+    } catch (error) {
+        console.error('Error creating new user:', error);
+        throw error;
+    }
+};
+
+app.post('/create-user', async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        const uid = await createUser(email, password);
+        res.status(200).json({ message: 'User created successfully', uid });
+    } catch (error) {
+        res.status(500).json({ error: 'Error creating user' });
+    }
+});
+
+
+
+app.post('/superhero-lists/:listId/ratings/toggle-visibility', async (req, res) => {
+    const { listId } = req.params;
+    const { ratingId, hidden } = req.body;
+
+    try {
+        const listIndex = superheroLists.findIndex((list) => list.id === listId);
+
+        const ratingIndex = superheroLists[listIndex].ratings.findIndex((rating) => rating.id === ratingId);
+
+        if (ratingIndex !== -1) {
+            superheroLists[listIndex].ratings[ratingIndex].hidden = hidden;
+
+            if (hidden) {
+                superheroLists[listIndex].ratings[ratingIndex].originalComment = superheroLists[listIndex].ratings[ratingIndex].comment;
+                superheroLists[listIndex].ratings[ratingIndex].comment = 'Removed by an admin';
+            } else {
+                superheroLists[listIndex].ratings[ratingIndex].comment = superheroLists[listIndex].ratings[ratingIndex].originalComment;
+                delete superheroLists[listIndex].ratings[ratingIndex].originalComment;
+            }
+
+            fs.writeFile(superheroListsPath, JSON.stringify(superheroLists), (err) => {
+                if (err) {
+                    console.error('Error writing superhero_lists.json file:', err);
+                    res.status(500).json({ error: 'Error updating superhero_lists.json file' });
+                } else {
+                    res.status(200).json({ message: 'Review visibility toggled successfully' });
+                }
+            });
+        } else {
+            res.status(404).json({ error: `Rating with ID "${ratingId}" not found in list with ID "${listId}"` });
+        }
+    } catch (error) {
+        console.error('Error toggling review visibility:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+
+
+
 
 
 //port listen message
