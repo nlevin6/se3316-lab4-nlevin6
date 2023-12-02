@@ -7,7 +7,7 @@ const port = 3000;
 const bodyParser = require('body-parser');
 const admin = require('firebase-admin');
 const crypto = require('crypto');
-const { v4: uuidv4 } = require('uuid');
+const {v4: uuidv4} = require('uuid');
 
 const superheroInfoPath = path.join(__dirname, 'superhero_info.json');
 const superheroPowersPath = path.join(__dirname, 'superhero_powers.json');
@@ -73,7 +73,6 @@ const decodeUserFromToken = (token) => {
             });
     });
 };
-
 
 
 module.exports = {
@@ -510,9 +509,9 @@ function updateSuperheroList(listId, userId, name, description, visibility, supe
 }
 
 app.post('/superhero-lists/:id/ratings', extractUserFromToken, (req, res) => {
-    const { id } = req.params;
-    const { userId } = req.user;
-    const { rating, comment } = req.body;
+    const {id} = req.params;
+    const {userId} = req.user;
+    const {rating, comment} = req.body;
 
     const listIndex = superheroLists.findIndex((list) => list.id === id);
 
@@ -531,16 +530,15 @@ app.post('/superhero-lists/:id/ratings', extractUserFromToken, (req, res) => {
         fs.writeFile(superheroListsPath, JSON.stringify(superheroLists), (err) => {
             if (err) {
                 console.error('Error writing superhero_lists.json file:', err);
-                res.status(500).json({ error: 'Error updating superhero_lists.json file' });
+                res.status(500).json({error: 'Error updating superhero_lists.json file'});
             } else {
-                res.status(200).json({ message: `Rating added to list with ID "${id}" successfully` });
+                res.status(200).json({message: `Rating added to list with ID "${id}" successfully`});
             }
         });
     } else {
-        res.status(404).json({ error: `List with ID "${id}" not found` });
+        res.status(404).json({error: `List with ID "${id}" not found`});
     }
 });
-
 
 
 app.get('/superhero-lists/:id/ratings', (req, res) => {
@@ -568,21 +566,20 @@ const createUser = async (email, password) => {
 };
 
 app.post('/create-user', async (req, res) => {
-    const { email, password } = req.body;
+    const {email, password} = req.body;
 
     try {
         const uid = await createUser(email, password);
-        res.status(200).json({ message: 'User created successfully', uid });
+        res.status(200).json({message: 'User created successfully', uid});
     } catch (error) {
-        res.status(500).json({ error: 'Error creating user' });
+        res.status(500).json({error: 'Error creating user'});
     }
 });
 
 
-
 app.post('/superhero-lists/:listId/ratings/toggle-visibility', async (req, res) => {
-    const { listId } = req.params;
-    const { ratingId, hidden } = req.body;
+    const {listId} = req.params;
+    const {ratingId, hidden} = req.body;
 
     try {
         const listIndex = superheroLists.findIndex((list) => list.id === listId);
@@ -603,23 +600,30 @@ app.post('/superhero-lists/:listId/ratings/toggle-visibility', async (req, res) 
             fs.writeFile(superheroListsPath, JSON.stringify(superheroLists), (err) => {
                 if (err) {
                     console.error('Error writing superhero_lists.json file:', err);
-                    res.status(500).json({ error: 'Error updating superhero_lists.json file' });
+                    res.status(500).json({error: 'Error updating superhero_lists.json file'});
                 } else {
-                    res.status(200).json({ message: 'Review visibility toggled successfully' });
+                    res.status(200).json({message: 'Review visibility toggled successfully'});
                 }
             });
         } else {
-            res.status(404).json({ error: `Rating with ID "${ratingId}" not found in list with ID "${listId}"` });
+            res.status(404).json({error: `Rating with ID "${ratingId}" not found in list with ID "${listId}"`});
         }
     } catch (error) {
         console.error('Error toggling review visibility:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.status(500).json({error: 'Internal Server Error'});
     }
 });
 
-
-
-
+app.get('/getRegisteredEmails', async (req, res) => {
+    try {
+        const listUsersResult = await admin.auth().listUsers();
+        const emails = listUsersResult.users.map((user) => user.email);
+        res.json(emails);
+    } catch (error) {
+        console.error('Error fetching registered emails:', error);
+        res.status(500).json({error: 'Internal Server Error'});
+    }
+});
 
 
 //port listen message

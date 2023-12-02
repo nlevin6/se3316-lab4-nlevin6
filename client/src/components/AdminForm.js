@@ -1,62 +1,61 @@
-import React, { useState, useEffect } from 'react';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { getFirestore, collection, getDocs } from 'firebase/firestore';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-const AdminForm = () => {
-    const [users, setUsers] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const authInstance = getAuth();
-    const db = getFirestore();
+const AdminForm = ({ registeredEmails }) => {
+    const [selectedEmail, setSelectedEmail] = useState('');
+    const [emailRoles, setEmailRoles] = useState({});
+    const navigate = useNavigate(); // Hook for navigation
 
-    useEffect(() => {
-        const fetchUsers = async () => {
-            try {
-                const usersCollection = collection(db, 'users');
-                const usersSnapshot = await getDocs(usersCollection);
-                const userList = [];
+    const handleEmailSelection = (email) => {
+        setSelectedEmail(email);
+    };
 
-                usersSnapshot.forEach((doc) => {
-                    const userData = doc.data();
-                    userList.push({
-                        uid: doc.id,
-                        email: userData.email,
-                        role: userData.role,
-                    });
-                });
-
-                setUsers(userList);
-                setLoading(false);
-            } catch (error) {
-                console.error('Error fetching users:', error);
-                setLoading(false);
-            }
-        };
-
-        const unsubscribe = onAuthStateChanged(authInstance, (user) => {
-            if (user) {
-                fetchUsers();
-            }
-        });
-
-        return () => {
-            unsubscribe();
-        };
-    }, [authInstance, db]);
-
-    if (loading) {
-        return <p>Loading...</p>;
-    }
+    const handleRoleChange = (email, selectedRole) => {
+        setEmailRoles((prevRoles) => ({ ...prevRoles, [email]: selectedRole }));
+    };
 
     return (
-        <div>
-            <h2>Registered Users</h2>
-            <ul>
-                {users.map((user) => (
-                    <li key={user.uid}>
-                        {user.email} - Role: {user.role}
-                    </li>
-                ))}
-            </ul>
+        <div className="max-w-screen-xl mx-auto p-4">
+            <h1 className="text-3xl font-bold mb-4">Admin Panel</h1>
+            <div className="bg-white rounded p-4 shadow">
+                <div className="flex mb-4">
+                    <button
+                        className="bg-blue-500 text-white px-4 py-2 rounded"
+                        onClick={() => {
+                            navigate('/superhero-search');
+                        }}
+                    >
+                        Back
+                    </button>
+                </div>
+                <h2 className="text-xl font-semibold mb-2">List of Registered Emails:</h2>
+                <ul>
+                    {registeredEmails
+                        .filter((email) => email !== 'admin@lab4.com')
+                        .map((email, index) => (
+                            <li key={index} className="flex justify-between items-center mb-2">
+                                <span
+                                    className="text-blue-500 cursor-pointer"
+                                    onClick={() => handleEmailSelection(email)}
+                                >
+                                    {email}
+                                </span>
+                                <div className="relative">
+                                    <select
+                                        className="bg-gray-200 border border-gray-300 rounded px-2 py-1"
+                                        value={emailRoles[email] || 'user'}
+                                        onChange={(e) =>
+                                            handleRoleChange(email, e.target.value)
+                                        }
+                                    >
+                                        <option value="user">User</option>
+                                        <option value="admin">Admin</option>
+                                    </select>
+                                </div>
+                            </li>
+                        ))}
+                </ul>
+            </div>
         </div>
     );
 };

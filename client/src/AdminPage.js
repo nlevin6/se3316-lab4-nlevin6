@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import React, {useState, useEffect} from 'react';
+import {getAuth, onAuthStateChanged} from 'firebase/auth';
 import AdminForm from "./components/AdminForm";
-import { useNavigate } from 'react-router-dom';
+import {useNavigate} from 'react-router-dom';
 
 const AdminPage = () => {
     const [isAdmin, setIsAdmin] = useState(false);
     const [user, setUser] = useState(null);
     const navigate = useNavigate();
+    const [registeredEmails, setRegisteredEmails] = useState([]);
 
     useEffect(() => {
         const authInstance = getAuth();
@@ -23,14 +24,33 @@ const AdminPage = () => {
             setUser(user);
         });
 
+        const fetchRegisteredEmails = async () => {
+            try {
+                const response = await fetch('/getRegisteredEmails');
+                if (response.ok) {
+                    const data = await response.json();
+                    setRegisteredEmails(data);
+                } else {
+                    console.error('Error fetching registered emails:', response.status, response.statusText);
+                }
+            } catch (error) {
+                console.error('Error fetching registered emails:', error);
+            }
+        };
+
+        // Call the fetchRegisteredEmails function here
+        fetchRegisteredEmails();
+
         return () => {
             unsubscribe();
         };
     }, [navigate]);
 
+
+
     return (
         <div className="text-center">
-            <AdminForm />
+            <AdminForm registeredEmails={registeredEmails}/>
         </div>
     );
 };
