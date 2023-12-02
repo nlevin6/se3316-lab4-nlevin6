@@ -63,6 +63,8 @@ const SuperheroSearchPage = () => {
         }
     };
 
+
+
     return (
         <div>
             <button className="bg-red-500 text-white py-2 px-4 rounded mb-2 absolute top-4 right-4"
@@ -76,6 +78,14 @@ const SuperheroSearchPage = () => {
             >
                 Settings
             </Link>
+            )}
+            {user && user.email === 'admin@lab4.com' && (
+                <Link
+                    to="/admin"
+                    className="bg-yellow-600 text-white py-2 px-4 rounded mb-2 absolute top-4 right-34"
+                >
+                    Admin Panel
+                </Link>
             )}
             <h1 className="text-3xl font-bold mb-6">Superhero Codex</h1>
             {user && (

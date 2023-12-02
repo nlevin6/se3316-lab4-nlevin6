@@ -13,8 +13,9 @@ const superheroPowersPath = path.join(__dirname, 'superhero_powers.json');
 const superheroListsPath = path.join(__dirname, 'superhero_lists.json');
 
 let superheroLists = [];//all user created lists
-
 let superheroData = [];//all superhero data
+
+const uid = 'JzsvhPWP83hSVQab6z8mdpHk8ij2'; //admin UID
 
 
 function generateRandomId() {
@@ -52,6 +53,17 @@ admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
 });
 
+//verify admin
+admin.auth().updateUser(uid, {
+    emailVerified: true,
+})
+    .then((userRecord) => {
+        console.log('Successfully marked user as verified:', userRecord.toJSON());
+    })
+    .catch((error) => {
+        console.error('Error marking user as verified:', error);
+    });
+
 // Function to decode and verify Firebase JWT token
 const decodeUserFromToken = (token) => {
     return new Promise((resolve, reject) => {
@@ -87,8 +99,16 @@ const extractUserFromToken = async (req, res, next) => {
     try {
         if (token) {
             const user = await decodeUserFromToken(token);
-            console.log('Decoded user:', user);
-            req.user = user || {};
+
+            // Check if the user is the admin
+            if (user && user.email === 'admin@lab4.com' && user.admin) {
+                console.log('Admin login successful');
+                // You can perform additional actions for admin login here if needed
+                req.user = user;
+            } else {
+                console.log('Regular user login');
+                req.user = user || {};
+            }
         } else {
             req.user = {};
         }
@@ -100,6 +120,14 @@ const extractUserFromToken = async (req, res, next) => {
     next();
 };
 
+const createCustomToken = (email) => {
+    const claims = {
+        admin: true,
+    };
+
+    return admin.auth().createCustomToken(email, claims);
+};
+
 //middleware to do logging
 app.use((req, res, next) => {
     console.log(`${req.method} request for ${req.url}`);
@@ -108,6 +136,31 @@ app.use((req, res, next) => {
 
 //middleware for body parsing for JSON
 app.use(bodyParser.json());
+
+app.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+
+    if (email === 'admin@lab4.com' && password === 'admin1234') {
+        try {
+            const customToken = await createCustomToken(email);
+            console.log("admin token: " + customToken);
+            res.status(200).json({ token: customToken, role: 'admin' });
+        } catch (error) {
+            console.error('Error creating custom token:', error);
+            res.status(500).json({ error: 'Internal server error' });
+        }
+    } else {
+        try {
+            const customToken = await createCustomToken(email);
+            console.log("user token: " + customToken);
+            res.status(200).json({ token: customToken, role: 'user' });
+        } catch (error) {
+            console.error('Error creating custom token:', error);
+            res.status(500).json({ error: 'Internal server error' });
+        }
+    }
+});
+
 
 app.get('/superhero/', (req, res) => {
     const superheroName = req.query.name;
@@ -233,7 +286,7 @@ app.get('/publishers', (req, res) => {
 
 //get the first n number of matching superhero IDs for a given search pattern matching a given information field
 app.get('/superhero/search', (req, res) => {
-    const { publisher, name, n, race, power } = req.query;
+    const {publisher, name, n, race, power} = req.query;
     console.log('Received search request with parameters:', req.query);
 
     let filteredHeroes = superheroData.filter(hero => {
@@ -257,7 +310,7 @@ app.get('/superhero/search', (req, res) => {
     console.log('Filtered superheroes:', filteredHeroes);
 
     if (filteredHeroes.length === 0) {
-        res.status(404).json({ message: 'No matching superheroes found' });
+        res.status(404).json({message: 'No matching superheroes found'});
     } else {
         const result = filteredHeroes.map(hero => ({
             id: hero.id,
@@ -273,10 +326,9 @@ app.get('/superhero/search', (req, res) => {
             Weight: hero.Weight
         }));
 
-        res.json({ matchingSuperheroes: result });
+        res.json({matchingSuperheroes: result});
     }
 });
-
 
 
 app.get('/superhero-lists', extractUserFromToken, (req, res) => {

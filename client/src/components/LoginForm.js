@@ -1,11 +1,30 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { getAuth, signInWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
+import {
+    getAuth,
+    signInWithEmailAndPassword,
+    onAuthStateChanged
+} from 'firebase/auth';
 
 const LoginForm = () => {
     const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [userRole, setUserRole] = useState(null);
+
+    useEffect(() => {
+        const auth = getAuth();
+
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (user) {
+                setUserRole(user.email === 'admin@lab4.com' ? 'admin' : 'user');
+            } else {
+                setUserRole(null);
+            }
+        });
+
+        return () => unsubscribe();
+    }, []);
 
     const handleGuestLogin = () => {
         navigate("/superhero-search");
@@ -25,8 +44,14 @@ const LoginForm = () => {
             if (user && user.emailVerified) {
                 const token = await user.getIdToken();
                 console.log('JWT Token:', token);
-                alert('Login successful.');
-                navigate("/superhero-search");//probably give them some privileges here. so they get more features
+
+                if (user.email === 'admin@lab4.com') {
+                    alert('Admin login successful.');
+                    navigate("/superhero-search");
+                } else {
+                    alert('Login successful.');
+                    navigate("/superhero-search");
+                }
             } else if (user && !user.emailVerified) {
                 alert('Please verify your email before logging in.');
             }
@@ -79,6 +104,12 @@ const LoginForm = () => {
                 >
                     Sign Up
                 </button>
+
+                {userRole === 'admin' && (
+                    <Link to="/admin-panel" className="text-blue-500 mb-2">
+                        Admin Panel
+                    </Link>
+                )}
 
                 <button
                     type="button"
