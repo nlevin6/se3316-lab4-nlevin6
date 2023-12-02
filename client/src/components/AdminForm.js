@@ -1,17 +1,85 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getAuth, onAuthStateChanged, getIdTokenResult } from 'firebase/auth';
 
 const AdminForm = ({ registeredEmails }) => {
     const [selectedEmail, setSelectedEmail] = useState('');
     const [emailRoles, setEmailRoles] = useState({});
-    const navigate = useNavigate(); // Hook for navigation
+    const [user, setUser] = useState(null);
+    const navigate = useNavigate();
+    const [isAdmin, setIsAdmin] = useState(null);
+
+    useEffect(() => {
+        const authInstance = getAuth();
+
+        const unsubscribe = onAuthStateChanged(authInstance, (user) => {
+            if (user) {
+                user.getIdTokenResult().then((idTokenResult) => {
+                    setIsAdmin(idTokenResult.claims.admin);
+                });
+            }
+            setUser(user);
+        });
+
+        return () => {
+            unsubscribe();
+        };
+    }, []);
+
+    useEffect(() => {
+        const fetchUserRoles = async () => {
+            const rolesPromises = registeredEmails.map(async (email) => {
+                try {
+                    const response = await fetch(`/get-user-role?email=${email}`);
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        return { email, role: data.role || 'user' };
+                    } else {
+                        console.error(`Error fetching user role for ${email}: ${data.error}`);
+                        return { email, role: 'user' };
+                    }
+                } catch (error) {
+                    console.error(`Error fetching user role for ${email}: ${error}`);
+                    return { email, role: 'user' };
+                }
+            });
+
+            const roles = await Promise.all(rolesPromises);
+
+            const initialRoles = {};
+            roles.forEach(({ email, role }) => {
+                initialRoles[email] = role;
+            });
+
+            setEmailRoles(initialRoles);
+        };
+
+        fetchUserRoles();
+    }, [registeredEmails]);
+
 
     const handleEmailSelection = (email) => {
         setSelectedEmail(email);
     };
 
-    const handleRoleChange = (email, selectedRole) => {
-        setEmailRoles((prevRoles) => ({ ...prevRoles, [email]: selectedRole }));
+    const handleRoleChange = async (email, selectedRole) => {
+        try {
+            await fetch('/update-user-role', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, role: selectedRole }),
+            });
+
+            setEmailRoles((prevRoles) => ({
+                ...prevRoles,
+                [email]: selectedRole,
+            }));
+        } catch (error) {
+            console.error('Error updating user role:', error);
+        }
     };
 
     return (
@@ -34,19 +102,17 @@ const AdminForm = ({ registeredEmails }) => {
                         .filter((email) => email !== 'admin@lab4.com')
                         .map((email, index) => (
                             <li key={index} className="flex justify-between items-center mb-2">
-                                <span
-                                    className="text-blue-500 cursor-pointer"
-                                    onClick={() => handleEmailSelection(email)}
-                                >
-                                    {email}
-                                </span>
+                <span
+                    className="text-blue-500 cursor-pointer"
+                    onClick={() => handleEmailSelection(email)}
+                >
+                  {email}
+                </span>
                                 <div className="relative">
                                     <select
                                         className="bg-gray-200 border border-gray-300 rounded px-2 py-1"
                                         value={emailRoles[email] || 'user'}
-                                        onChange={(e) =>
-                                            handleRoleChange(email, e.target.value)
-                                        }
+                                        onChange={(e) => handleRoleChange(email, e.target.value)}
                                     >
                                         <option value="user">User</option>
                                         <option value="admin">Admin</option>

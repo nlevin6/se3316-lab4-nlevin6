@@ -551,28 +551,47 @@ app.get('/superhero-lists/:id/ratings', (req, res) => {
     }
 });
 
-const createUser = async (email, password) => {
+app.put('/update-user-role', async (req, res) => {
+    const { email, role } = req.body;
+
     try {
-        const userRecord = await admin.auth().createUser({
-            email: email,
-            password: password,
-        });
-        console.log('Successfully created new user:', userRecord.uid);
-        return userRecord.uid;
+        // Get user by email
+        const userRecord = await admin.auth().getUserByEmail(email);
+
+        // Update user custom claims using UID
+        await admin.auth().setCustomUserClaims(userRecord.uid, { admin: role === 'admin' });
+
+        res.status(200).json({ message: 'User role updated successfully' });
     } catch (error) {
-        console.error('Error creating new user:', error);
-        throw error;
+        console.error('Error updating user role:', error);
+
+        if (error.code === 'auth/user-not-found') {
+            res.status(404).json({ error: 'User not found' });
+        } else {
+            res.status(500).json({ error: 'Internal server error' });
+        }
     }
-};
+});
 
-app.post('/create-user', async (req, res) => {
-    const {email, password} = req.body;
+app.get('/get-user-role', async (req, res) => {
+const { email } = req.query;
 
     try {
-        const uid = await createUser(email, password);
-        res.status(200).json({message: 'User created successfully', uid});
+        // Get user by email
+        const userRecord = await admin.auth().getUserByEmail(email);
+
+        // Get user custom claims
+        const customClaims = userRecord.customClaims || { admin: false };
+
+        res.status(200).json({ role: customClaims.admin ? 'admin' : 'user' });
     } catch (error) {
-        res.status(500).json({error: 'Error creating user'});
+        console.error('Error getting user role:', error);
+
+        if (error.code === 'auth/user-not-found') {
+            res.status(404).json({ error: 'User not found' });
+        } else {
+            res.status(500).json({ error: 'Internal server error' });
+        }
     }
 });
 
