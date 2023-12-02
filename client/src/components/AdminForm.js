@@ -99,7 +99,7 @@ const AdminForm = ({ registeredEmails }) => {
                 <h2 className="text-xl font-semibold mb-2">List of Registered Emails:</h2>
                 <ul>
                     {registeredEmails
-                        .filter((email) => email !== 'admin@lab4.com')
+                        .filter((email) => email !== 'admin@lab4.com' && email !== user?.email)
                         .map((email, index) => (
                             <li key={index} className="flex justify-between items-center mb-2">
                 <span
