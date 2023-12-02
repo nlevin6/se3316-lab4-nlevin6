@@ -87,7 +87,7 @@ const SuperheroSearchPage = () => {
                     Settings
                 </Link>
             )}
-            {user.role === 'admin' && (
+            {user && user.role === 'admin' && (
                 <Link
                     to="/admin"
                     className="bg-yellow-600 text-white py-2 px-4 rounded mb-2 absolute top-4 right-34"
