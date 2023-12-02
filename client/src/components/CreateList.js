@@ -27,8 +27,7 @@ const CreateList = ({ onClose }) => {
     }, []);
 
     const setListNameWithSanitization = (input) => {
-        // Remove any characters that are not regular or capital letters
-        const sanitizedInput = input.replace(/[^a-zA-Z]/g, '');
+        const sanitizedInput = input.replace(/[^a-zA-Z\s]/g, '');
         setListName(sanitizedInput);
     };
 

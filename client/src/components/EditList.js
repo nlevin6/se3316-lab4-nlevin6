@@ -73,7 +73,7 @@ const EditList = ({ listId, initialListName, onClose, onSave }) => {
     };
 
     const setEditedListNameWithSanitization = (input) => {
-        const sanitizedInput = input.replace(/[^a-zA-Z]/g, '');
+        const sanitizedInput = input.replace(/[^a-zA-Z\s]/g, '');
         setEditedListName(sanitizedInput);
     };
 
