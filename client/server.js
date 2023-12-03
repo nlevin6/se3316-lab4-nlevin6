@@ -644,6 +644,63 @@ app.get('/getRegisteredEmails', async (req, res) => {
     }
 });
 
+async function toggleAccountStatus(email) {
+    try {
+        const userRecord = await admin.auth().getUserByEmail(email);
+
+        await admin.auth().updateUser(userRecord.uid, {
+            disabled: !userRecord.disabled,
+        });
+
+        return !userRecord.disabled ? 'disabled' : 'enabled';
+    } catch (error) {
+        console.error('Error toggling account status:', error);
+        throw error;
+    }
+}
+
+app.put('/toggle-enable-disable', async (req, res) => {
+    const { email } = req.query;
+
+    try {
+        const status = await toggleAccountStatus(email);
+        res.status(200).json({ status });
+    } catch (error) {
+        console.error(`Error toggling enable/disable for ${email}:`, error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+app.get('/get-user-role-and-status', async (req, res) => {
+    const { email } = req.query;
+
+    try {
+        // Get user by email
+        const userRecord = await admin.auth().getUserByEmail(email);
+
+        // Get user custom claims
+        const customClaims = userRecord.customClaims || { admin: false };
+
+        // Include account status information
+        const status = userRecord.disabled ? 'disabled' : 'enabled';
+
+        res.status(200).json({ role: customClaims.admin ? 'admin' : 'user', status });
+    } catch (error) {
+        console.error('Error getting user role or account status:', error);
+
+        if (error.code === 'auth/user-not-found') {
+            res.status(404).json({ error: 'User not found' });
+        } else {
+            res.status(500).json({ error: 'Internal server error' });
+        }
+    }
+});
+
+
+
+
+
+
 
 //port listen message
 app.listen(port, () => {
