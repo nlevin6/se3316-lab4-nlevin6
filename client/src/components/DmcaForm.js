@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const DmcaForm = ({ onClose }) => {
+const DmcaForm = ({ onClose, onUpdateDisputes }) => {
     const [formState, setFormState] = useState({
         dateRequestReceived: '',
         dateNoticeSent: '',
@@ -30,6 +30,7 @@ const DmcaForm = ({ onClose }) => {
             });
 
             if (response.ok) {
+                onUpdateDisputes(formState);
                 console.log('DMCA form submitted successfully');
             } else {
                 console.error('Error submitting DMCA form:', response.statusText);

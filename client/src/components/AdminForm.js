@@ -167,6 +167,10 @@ const AdminForm = ({registeredEmails}) => {
         }
     };
 
+    const updateDmcaDisputes = (newDispute) => {
+        setDmcaDisputes((prevDisputes) => [...prevDisputes, newDispute]);
+    };
+
     return (
         <div className="max-w-screen-xl mx-auto p-4">
             <h1 className="text-3xl font-bold mb-4">Admin Panel</h1>
@@ -222,7 +226,8 @@ const AdminForm = ({registeredEmails}) => {
                 <h2 className="text-xl font-semibold mb-2">DMCA Takedown</h2>
                 <div>
                     <p>
-                        I'll have the instructions written here for how to submit a DMCA takedown request.
+                        To file a DMCA Takedown ticket, please fill out the date of the dispute, the date you have sent the notice, and the date you have received the request.
+                        Fill in any notes you may have and select the status of the dispute.
                     </p>
                     <button
                         className="bg-blue-500 text-white py-2 px-4 rounded mb-2"
@@ -234,7 +239,7 @@ const AdminForm = ({registeredEmails}) => {
                     {showDmcaForm && (
                         <div
                             className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-                            <DmcaForm onClose={handleDmcaFormClose}/>
+                            <DmcaForm onClose={handleDmcaFormClose} onUpdateDisputes={updateDmcaDisputes}/>
                         </div>
                     )}
                     {/* Display DMCA disputes */}
