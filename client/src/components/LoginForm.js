@@ -27,7 +27,7 @@ const LoginForm = () => {
     }, []);
 
     const handleGuestLogin = () => {
-        navigate("/superhero-search");
+        navigate("/superhero-search-page");
     }
 
     const handleSignup = () => {
@@ -47,10 +47,10 @@ const LoginForm = () => {
 
                 if (user.email === 'admin@lab4.com') {
                     alert('Head Admin login successful.');
-                    navigate("/superhero-search");
+                    navigate("/superhero-search-page");
                 } else {
                     alert('Login successful.');
-                    navigate("/superhero-search");
+                    navigate("/superhero-search-page");
                 }
             } else if (user && !user.emailVerified) {
                 alert('Please verify your email before logging in.');

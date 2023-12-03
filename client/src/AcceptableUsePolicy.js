@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 const AcceptableUsePolicy = () => {
     return (
         <div className="max-w-screen-lg mx-auto p-8">
-            <Link to="/superhero-search" className="text-blue-500 mb-4 inline-block">&lt; Back</Link>
+            <Link to="/superhero-search-page" className="text-blue-500 mb-4 inline-block">&lt; Back</Link>
             <h1 className="text-3xl font-bold mb-6">Acceptable Use Policy</h1>
 
             <h2 className="text-xl font-bold mb-2">Introduction</h2>

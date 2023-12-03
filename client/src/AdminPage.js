@@ -17,7 +17,7 @@ const AdminPage = () => {
                     setIsAdmin(idTokenResult.claims.admin);
                     if (!idTokenResult.claims.admin) {
                         alert('You must be an admin to access this page.');
-                        navigate('/superhero-search');
+                        navigate('/superhero-search-page');
                     }
                 });
             }

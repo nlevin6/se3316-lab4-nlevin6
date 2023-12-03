@@ -10,7 +10,7 @@ const LoginPage = () => {
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(authInstance, (user) => {
             if (user) {
-                navigate('/superhero-search');
+                navigate('/superhero-search-page');
             }
         });
         return () => {
