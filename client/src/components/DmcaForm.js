@@ -30,10 +30,8 @@ const DmcaForm = ({ onClose }) => {
             });
 
             if (response.ok) {
-                // Successful submission, you can handle the response here if needed
                 console.log('DMCA form submitted successfully');
             } else {
-                // Handle error responses
                 console.error('Error submitting DMCA form:', response.statusText);
             }
         } catch (error) {
