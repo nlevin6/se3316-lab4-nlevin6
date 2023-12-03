@@ -1,1 +1,109 @@
-[{"id":"e2fc412e6a5bd8e6","name":"private list","description":"sdfsd","visibility":"private","superheroes":[],"ratings":[],"createdAt":"2023-11-30T23:03:07.601Z","modifiedAt":"2023-11-30T23:24:41.600Z"},{"id":"cb80bf85bcb6f983","name":"public list","description":"asdasd","visibility":"public","superheroes":[{"name":"Superboy","Publisher":"DC Comics"},{"name":"Supergirl","Publisher":"DC Comics"},{"name":"Batgirl IV","Publisher":"DC Comics"},{"name":"Batman","Publisher":"DC Comics"},{"name":"Battlestar","Publisher":"Marvel Comics"}],"ratings":[{"id":"80b95eb5-b8d5-4c5d-b5b9-82f3d7aba8c7","rating":"1","comment":"test1","hidden":false},{"id":"defe9062-eab4-4638-af6d-83d57474d3d1","rating":"1","comment":"Removed by an admin","hidden":true,"originalComment":"test2"},{"id":"fb3f3ed6-3857-4830-81c0-0e64ebc0156d","rating":"1","comment":"test3","hidden":false}],"createdAt":"2023-11-30T23:03:13.417Z","modifiedAt":"2023-12-01T22:33:47.169Z"}]
+[
+  {
+    "email": "admin@lab4.com",
+    "id": "c50b505858d6dfbd",
+    "name": "admin test PUBLIC LIST",
+    "description": "asdasd",
+    "visibility": "public",
+    "superheroes": [
+      {
+        "name": "Batman",
+        "Publisher": "DC Comics"
+      },
+      {
+        "name": "Batman II",
+        "Publisher": "DC Comics"
+      }
+    ],
+    "ratings": [],
+    "createdAt": "2023-12-03T01:15:27.615Z",
+    "modifiedAt": "2023-12-03T01:35:17.765Z"
+  },
+  {
+    "email": "admin@lab4.com",
+    "id": "4b3aeece0b660083",
+    "name": "admin test PRIVATE list",
+    "description": "made by admin acc",
+    "visibility": "private",
+    "superheroes": [
+      {
+        "name": "Flash Gordon",
+        "Publisher": ""
+      },
+      {
+        "name": "Flash IV",
+        "Publisher": "DC Comics"
+      }
+    ],
+    "ratings": [],
+    "createdAt": "2023-12-03T01:24:27.480Z",
+    "modifiedAt": "2023-12-03T01:35:10.911Z"
+  },
+  {
+    "email": "ecetestemail900@gmail.com",
+    "id": "9f53fac8ba25763f",
+    "name": "ece account public list",
+    "description": "bddfb",
+    "visibility": "public",
+    "superheroes": [],
+    "ratings": [
+      {
+        "id": "aeb7c51a-65a7-4b4c-b416-92565c41b4de",
+        "rating": "1",
+        "comment": "Removed by an admin",
+        "hidden": true,
+        "originalComment": "test comment 1"
+      },
+      {
+        "id": "fee687a6-f6a3-49a4-b481-3d404a23a952",
+        "rating": "5",
+        "comment": "test coimment 2",
+        "hidden": false
+      }
+    ],
+    "createdAt": "2023-12-03T01:25:46.419Z",
+    "modifiedAt": "2023-12-03T01:25:46.419Z"
+  },
+  {
+    "email": "ecetestemail900@gmail.com",
+    "id": "a38eb2ffb76fc6b6",
+    "name": "ece account private list",
+    "description": "asdasd",
+    "visibility": "private",
+    "superheroes": [],
+    "ratings": [],
+    "createdAt": "2023-12-03T01:25:55.894Z",
+    "modifiedAt": "2023-12-03T01:46:17.441Z"
+  },
+  {
+    "email": "levinick302@gmail.com",
+    "id": "5fd7fdef25ebd91b",
+    "name": "levinick private list",
+    "description": "asdasd",
+    "visibility": "private",
+    "superheroes": [
+      {
+        "name": "Superboy-Prime",
+        "Publisher": "DC Comics"
+      },
+      {
+        "name": "Supergirl",
+        "Publisher": "DC Comics"
+      }
+    ],
+    "ratings": [],
+    "createdAt": "2023-12-03T01:30:48.743Z",
+    "modifiedAt": "2023-12-03T01:30:48.743Z"
+  },
+  {
+    "email": "levinick302@gmail.com",
+    "id": "424e919c3a7d326e",
+    "name": "levinick PUBLIC list",
+    "description": "asdasd",
+    "visibility": "public",
+    "superheroes": [],
+    "ratings": [],
+    "createdAt": "2023-12-03T01:31:04.958Z",
+    "modifiedAt": "2023-12-03T01:31:04.958Z"
+  }
+]

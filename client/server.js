@@ -93,7 +93,7 @@ const extractUserFromToken = async (req, res, next) => {
         if (token) {
             const user = await decodeUserFromToken(token);
 
-            req.user = {...user, role: user.role || 'user'};
+            req.user = {...user, role: user.role || 'user', email: user.email}; // Attach email to req.user
         } else {
             req.user = {role: 'user'};
         }
@@ -104,6 +104,7 @@ const extractUserFromToken = async (req, res, next) => {
 
     next();
 };
+
 
 
 const createCustomToken = (email) => {
@@ -330,8 +331,7 @@ app.get('/superhero-lists/:listId', (req, res) => {
 // POST endpoint to create a superhero list
 app.post('/superhero-lists', extractUserFromToken, (req, res) => {
     const {listName, description, superheroes, visibility} = req.body;
-    const {userId} = req.user;
-    console.log("userId in POST request: " + userId);
+    const {userId, email} = req.user; // Extract email from req.user
 
     const listExists = checkIfListExists(listName, userId);
 
@@ -339,13 +339,12 @@ app.post('/superhero-lists', extractUserFromToken, (req, res) => {
         return res.status(400).json({error: 'List name already exists'});
     }
 
-    const {listId} = saveSuperheroList(listName, description, visibility, userId, superheroes);
+    const {listId} = saveSuperheroList(listName, description, visibility, userId, email, superheroes);
 
     res.status(200).json({message: 'Superhero list created successfully', listId});
 });
 
-
-function saveSuperheroList(listName, description, visibility, userId, superheroes) {
+function saveSuperheroList(listName, description, visibility, userId, email, superheroes) {
     // Check if the list name already exists
     if (checkIfListExists(listName, userId)) {
         throw new Error('List name already exists');
@@ -354,6 +353,7 @@ function saveSuperheroList(listName, description, visibility, userId, superheroe
     const newListId = generateRandomId();
 
     const newList = {
+        email,
         userId,
         id: newListId,
         name: listName,
@@ -577,10 +577,7 @@ app.get('/get-user-role', async (req, res) => {
 const { email } = req.query;
 
     try {
-        // Get user by email
         const userRecord = await admin.auth().getUserByEmail(email);
-
-        // Get user custom claims
         const customClaims = userRecord.customClaims || { admin: false };
 
         res.status(200).json({ role: customClaims.admin ? 'admin' : 'user' });
@@ -675,13 +672,8 @@ app.get('/get-user-role-and-status', async (req, res) => {
     const { email } = req.query;
 
     try {
-        // Get user by email
         const userRecord = await admin.auth().getUserByEmail(email);
-
-        // Get user custom claims
         const customClaims = userRecord.customClaims || { admin: false };
-
-        // Include account status information
         const status = userRecord.disabled ? 'disabled' : 'enabled';
 
         res.status(200).json({ role: customClaims.admin ? 'admin' : 'user', status });

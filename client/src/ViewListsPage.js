@@ -1,5 +1,5 @@
-import React, {useState, useEffect} from 'react';
-import {getAuth, onAuthStateChanged} from 'firebase/auth';
+import React, { useState, useEffect } from 'react';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import EditList from './components/EditList';
 
 const ViewListsPage = () => {
@@ -9,7 +9,7 @@ const ViewListsPage = () => {
     const [ratingValue, setRatingValue] = useState(1);
     const [commentValue, setCommentValue] = useState('');
     const [isAdmin, setIsAdmin] = useState(null);
-    const [ user, setUser] = useState(null);
+    const [user, setUser] = useState(null);
 
     const fetchSuperheroLists = async () => {
         try {
@@ -46,6 +46,21 @@ const ViewListsPage = () => {
             unsubscribe();
         };
     }, []);
+
+    const canEditOrDelete = (list) => {
+        if (!user) {
+            // User not logged in, cannot edit or delete
+            return false;
+        }
+
+        // Check if the user is an admin
+        if (isAdmin) {
+            return true; // Admins can edit and delete all lists
+        }
+
+        // Check if the list is created by the logged-in user
+        return list && list.email === user.email;
+    };
 
 
     const handleDeleteList = async (listId) => {
@@ -96,8 +111,6 @@ const ViewListsPage = () => {
             console.error('Error toggling review visibility:', error);
         }
     };
-
-
 
     const handleEditList = async (listId) => {
         if (listId) {
@@ -178,12 +191,14 @@ const ViewListsPage = () => {
 
     const isAuthenticated = user !== null;
 
-
-    //this will show 20 lists to registered users and 10 lists to unregistered users
+    // this will show 20 lists to registered users and 10 lists to unregistered users
     const visibleLists = isAuthenticated
-        ? lists.slice(0, 20)
+        ? isAdmin
+            ? lists.slice(0, 20) // Admins can see all lists
+            : lists.filter(
+                (list) => list.visibility === 'public' || (list.email === user.email && list.visibility === 'private')
+            ).slice(0, 20)
         : lists.filter((list) => list.visibility === 'public').slice(0, 10);
-
 
 
     return (
@@ -199,12 +214,13 @@ const ViewListsPage = () => {
                                 onClick={() => handleExpandToggle(index)}>
                             {list.name} {list.visibility === 'public' && (
                             <span className="text-gray-600 text-sm">
-                        {' '}
                                 --- {calculateAverageRating(list.ratings) || 'No ratings'} ({list.ratings.length} votes)
+                                || Created By: {list.email}
                             </span>
                         )}
+
                         </button>
-                        {isAuthenticated && (
+                        {isAuthenticated && canEditOrDelete(list) && (
                             <div>
                                 <button
                                     className="bg-red-500 text-white py-2 px-4 rounded mr-2 cursor-pointer"
