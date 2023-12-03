@@ -8,6 +8,9 @@ import SuperheroSearchPage from './SuperheroSearchPage';
 import ViewListsPage from './ViewListsPage';
 import ChangePasswordPage from "./ChangePasswordPage";
 import AdminPage from "./AdminPage";
+import SecurityPrivacyPolicy from "./SecurityPrivacyPolicy";
+import AcceptableUsePolicy from "./AcceptableUsePolicy";
+import DMCANotice from "./DMCANotice";
 
 const auth = getAuth();
 
@@ -35,6 +38,9 @@ const App = () => {
                 <Route path='view-lists' element={<ViewListsPage />} />
                 <Route path='/change-password' element={<ChangePasswordPage />} />
                 <Route path='/admin' element={<AdminPage />} />
+                <Route path="/security-privacy-policy" element={<SecurityPrivacyPolicy />} />
+                <Route path="/acceptable-use-policy" element={<AcceptableUsePolicy />} />
+                <Route path="dmca-notice" element={<DMCANotice />} />
             </Routes>
         </Router>
     );

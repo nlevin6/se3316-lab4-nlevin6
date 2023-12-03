@@ -113,6 +113,28 @@ const SuperheroSearchPage = () => {
             {isCreateListOpen && <CreateList onClose={handleCloseCreateList}/>}
             <SearchForm onSearch={handleSearch}/>
             <SearchResults results={searchResults}/>
+
+            <div className="fixed bottom-0 left-0 right-0 p-4 bg-gray-200">
+                <div className="flex items-center justify-center">
+                    <span className="text-blue-500">
+                        <Link to="/security-privacy-policy" className="hover:underline">
+                            Security and Privacy Policy
+                        </Link>
+                    </span>
+                    <span className="mx-2 text-gray-500">|</span>
+                    <span className="text-blue-500">
+                        <Link to="/acceptable-use-policy" className="hover:underline">
+                            Acceptable Use Policy
+                        </Link>
+                    </span>
+                    <span className="mx-2 text-gray-500">|</span>
+                    <span className="text-blue-500">
+                        <Link to="/dmca-notice" className="hover:underline">
+                            DMCA Notice & Takedown Policy
+                        </Link>
+                    </span>
+                </div>
+            </div>
         </div>
     );
 };
