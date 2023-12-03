@@ -54,7 +54,7 @@ const SettingsForm = () => {
     return (
         <div>
             <div className="flex justify-end mb-4">
-                <Link to="/superhero-search" className="bg-blue-500 text-white py-2 px-4 rounded mb-2 absolute top-4 right-4">
+                <Link to="/superhero-search-page" className="bg-blue-500 text-white py-2 px-4 rounded mb-2 absolute top-4 right-4">
                     Back
                 </Link>
             </div>

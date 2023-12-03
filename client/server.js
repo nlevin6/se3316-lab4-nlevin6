@@ -47,7 +47,7 @@ fs.readFile(superheroInfoPath, 'utf8', (err, data) => {
     superheroData = JSON.parse(data);
 });
 app.use(cors({origin: '*'}));
-app.use(express.static(path.join(__dirname, '../client/build')));
+app.use(express.static(path.join(__dirname, './build')));
 
 // Initialize Firebase Admin SDK with service account key
 const serviceAccount = require(path.join(__dirname, 'se3316-lab4-nlevin6-firebase-adminsdk-8ji0u-aa1c085f26.json'));
@@ -779,7 +779,7 @@ app.delete('/delete-dmca-request/:id', async (req, res) => {
 });
 
 app.get('*', (req, res) => {
-    res.sendFile('index.html', {root: path.join(__dirname, '../client/build/')});
+    res.sendFile('index.html', {root: path.join(__dirname, './build/')});
 });
 
 //port listen message
