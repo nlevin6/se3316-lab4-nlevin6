@@ -11,7 +11,6 @@ const SearchResults = ({ results }) => {
             }
 
             const data = await response.json();
-            console.log("Backend response:", data);  // Log the entire data object
             superhero.powers = data || [];
             setExpandedHero(superhero.id === expandedHero ? null : superhero.id);
         } catch (error) {
@@ -75,7 +74,7 @@ const SearchResults = ({ results }) => {
                                     <div className="mt-4 border p-4 rounded-md bg-green-200">
                                         <h3 className="text-lg font-semibold mb-2">Superpowers</h3>
                                         <ul className="list-disc pl-6">
-                                            {Object.entries(superhero.powers).map(([power, value]) => (
+                                            {Object.entries(superhero.powers || {}).map(([power, value]) => (
                                                 value === "True" && <li key={power}>{power}</li>
                                             ))}
                                         </ul>

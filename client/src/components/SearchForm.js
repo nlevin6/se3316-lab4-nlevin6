@@ -18,9 +18,8 @@ const SearchForm = ({ onSearch }) => {
     }, []);
 
     const sanitizeInput = (input) => {
-        // Regular expression to match only letters and capital letters
-        const regex = /^[A-Za-z]+$/;
-        return input.replace(/[^A-Za-z]/g, ''); // Remove characters that do not match the regex
+        const regex = /[^A-Za-z0-9\s]/g;
+        return input.replace(regex, '');
     };
 
     const handleInputChange = (e) => {
@@ -59,7 +58,7 @@ const SearchForm = ({ onSearch }) => {
                     <select className="border rounded py-2 px-3" name="publisher" value={searchParams.publisher} onChange={handleInputChange}>
                         <option value="">Select a Publisher</option>
                         {publishers.map((publisher, index) => (
-                            <option key={index} value={publisher}>
+                            <option key={index} value={sanitizeInput(publisher)}>
                                 {publisher}
                             </option>
                         ))}
