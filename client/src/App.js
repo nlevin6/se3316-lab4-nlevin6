@@ -19,7 +19,7 @@ const App = () => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (user) {
                 user.getIdToken().then((token) => {
-                    console.log('JWT Token:', token);
+                    //console.log('JWT Token:', token);
                 });
             } else {
                 // User is signed out

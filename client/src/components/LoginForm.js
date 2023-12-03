@@ -43,10 +43,10 @@ const LoginForm = () => {
 
             if (user && user.emailVerified) {
                 const token = await user.getIdToken();
-                console.log('JWT Token:', token);
+                //console.log('JWT Token:', token);
 
                 if (user.email === 'admin@lab4.com') {
-                    alert('Admin login successful.');
+                    alert('Head Admin login successful.');
                     navigate("/superhero-search");
                 } else {
                     alert('Login successful.');
