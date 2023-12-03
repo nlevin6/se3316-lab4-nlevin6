@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import React, {useState, useEffect} from 'react';
+import {useNavigate} from 'react-router-dom';
+import {getAuth, onAuthStateChanged} from 'firebase/auth';
+import DmcaForm from './DmcaForm';
 
-const AdminForm = ({ registeredEmails }) => {
+const AdminForm = ({registeredEmails}) => {
     const [selectedEmail, setSelectedEmail] = useState('');
     const [emailRoles, setEmailRoles] = useState({});
     const [user, setUser] = useState(null);
     const navigate = useNavigate();
     const [isAdmin, setIsAdmin] = useState(null);
+    const [showDmcaForm, setShowDmcaForm] = useState(false);
+    const [dmcaDisputes, setDmcaDisputes] = useState([]);
 
     useEffect(() => {
         const authInstance = getAuth();
@@ -34,22 +37,22 @@ const AdminForm = ({ registeredEmails }) => {
                     const data = await response.json();
 
                     if (response.ok) {
-                        return { email, role: data.role || 'user', status: data.status || 'enabled' };
+                        return {email, role: data.role || 'user', status: data.status || 'enabled'};
                     } else {
                         console.error(`Error fetching user role or account status for ${email}`);
-                        return { email, role: 'user', status: 'enabled' };
+                        return {email, role: 'user', status: 'enabled'};
                     }
                 } catch (error) {
                     console.error(`Error fetching user role or account status for ${email}: ${error}`);
-                    return { email, role: 'user', status: 'enabled' };
+                    return {email, role: 'user', status: 'enabled'};
                 }
             });
 
             const roles = await Promise.all(rolesPromises);
 
             const initialRoles = {};
-            roles.forEach(({ email, role, status }) => {
-                initialRoles[email] = { role, status };
+            roles.forEach(({email, role, status}) => {
+                initialRoles[email] = {role, status};
             });
 
             setEmailRoles(initialRoles);
@@ -58,11 +61,31 @@ const AdminForm = ({ registeredEmails }) => {
         fetchUserRoles();
     }, [registeredEmails]);
 
-    // useEffect to watch for changes in emailRoles and trigger actions
     useEffect(() => {
-        // You can perform any additional actions here when emailRoles state changes
         console.log('Email roles updated:', emailRoles);
     }, [emailRoles]);
+
+    useEffect(() => {
+        const fetchDmcaDisputes = async () => {
+            try {
+                const response = await fetch('/get-dmca-requests');
+                const data = await response.json();
+
+                if (response.ok) {
+                    console.log('DMCA Disputes Response:', data);
+                    setDmcaDisputes(data);
+                } else {
+                    console.error('Error fetching DMCA disputes:', data.error);
+                }
+            } catch (error) {
+                console.error('Error fetching DMCA disputes:', error);
+            }
+        };
+
+        fetchDmcaDisputes();
+    }, []);
+
+
 
     const handleEmailSelection = (email) => {
         setSelectedEmail(email);
@@ -75,12 +98,12 @@ const AdminForm = ({ registeredEmails }) => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ email, role: selectedRole }),
+                body: JSON.stringify({email, role: selectedRole}),
             });
 
             setEmailRoles((prevRoles) => ({
                 ...prevRoles,
-                [email]: { ...prevRoles[email], role: selectedRole },
+                [email]: {...prevRoles[email], role: selectedRole},
             }));
         } catch (error) {
             console.error('Error updating user role:', error);
@@ -98,7 +121,7 @@ const AdminForm = ({ registeredEmails }) => {
             if (response.ok) {
                 setEmailRoles((prevRoles) => ({
                     ...prevRoles,
-                    [email]: { ...prevRoles[email], status: data.status === 'enabled' ? 'user' : 'disabled' },
+                    [email]: {...prevRoles[email], status: data.status === 'enabled' ? 'user' : 'disabled'},
                 }));
 
                 alert(`Account ${data.status === 'enabled' ? 'enabled' : 'disabled'} for ${email}`);
@@ -107,6 +130,40 @@ const AdminForm = ({ registeredEmails }) => {
             }
         } catch (error) {
             console.error(`Error toggling enable/disable for ${email}: ${error}`);
+        }
+    };
+    useEffect(() => {
+        console.log('DMCA Disputes:', dmcaDisputes);
+    }, [dmcaDisputes]);
+
+
+    const handleDmcaForm = () => {
+        setShowDmcaForm(true);
+    };
+
+    const handleDmcaFormClose = () => {
+        setShowDmcaForm(false);
+    };
+
+    const handleDelete = async (id) => {
+        try {
+            const response = await fetch(`/delete-dmca-request/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (response.ok) {
+                setDmcaDisputes((prevDisputes) =>
+                    prevDisputes.filter((dispute) => dispute.id !== id)
+                );
+                console.log('DMCA dispute deleted successfully');
+            } else {
+                console.error('Failed to delete DMCA dispute');
+            }
+        } catch (error) {
+            console.error('Error deleting DMCA dispute:', error);
         }
     };
 
@@ -124,7 +181,7 @@ const AdminForm = ({ registeredEmails }) => {
                         Back
                     </button>
                 </div>
-                <h2 className="text-xl font-semibold mb-2">List of Registered Emails:</h2>
+                <h2 className="text-xl font-semibold mb-2">List of Registered Emails</h2>
                 <ul>
                     {registeredEmails
                         .filter((email) => email !== 'admin@lab4.com' && email !== user?.email)
@@ -159,6 +216,66 @@ const AdminForm = ({ registeredEmails }) => {
                             </li>
                         ))}
                 </ul>
+            </div>
+
+            <div className='bg-white rounded p-4 shadow'>
+                <h2 className="text-xl font-semibold mb-2">DMCA Takedown</h2>
+                <div>
+                    <p>
+                        I'll have the instructions written here for how to submit a DMCA takedown request.
+                    </p>
+                    <button
+                        className="bg-blue-500 text-white py-2 px-4 rounded mb-2"
+                        onClick={handleDmcaForm}
+                    >
+                        File DMCA Takedown
+                    </button>
+
+                    {showDmcaForm && (
+                        <div
+                            className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+                            <DmcaForm onClose={handleDmcaFormClose}/>
+                        </div>
+                    )}
+                    {/* Display DMCA disputes */}
+                    <h3 className="text-lg font-semibold mt-4">DMCA Disputes</h3>
+                    {Array.isArray(dmcaDisputes) && dmcaDisputes.length > 0 ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            {dmcaDisputes.map((dispute, index) => (
+                                <div key={index} className="bg-white p-4 rounded-md shadow-md">
+                                    <p className="text-gray-600 font-semibold mb-2">Date Dispute Received:</p>
+                                    <p className="text-gray-600 mb-2">{dispute.dateDisputeReceived}</p>
+
+                                    <p className="text-gray-600 font-semibold mb-2">Date Notice Sent:</p>
+                                    <p className="text-gray-600 mb-2">{dispute.dateNoticeSent}</p>
+
+                                    <p className="text-gray-600 font-semibold mb-2">Date Request Received:</p>
+                                    <p className="text-gray-600 mb-2">{dispute.dateRequestReceived}</p>
+
+                                    <p className="text-gray-600 font-semibold mb-2">Notes:</p>
+                                    <p className="text-gray-600 mb-2">{dispute.notes}</p>
+
+                                    <p className="text-gray-600 font-semibold mb-2">Status:</p>
+                                    <p className="text-gray-600 mb-2">{dispute.status}</p>
+
+                                    <button
+                                        className="text-red-500 hover:text-red-700 cursor-pointer"
+                                        onClick={() => handleDelete(dispute.id)}
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
+
+                            ))}
+
+                        </div>
+                    ) : (
+                        <p>No DMCA disputes found.</p>
+                    )}
+
+
+
+                </div>
             </div>
         </div>
     );

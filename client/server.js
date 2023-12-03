@@ -12,6 +12,7 @@ const {v4: uuidv4} = require('uuid');
 const superheroInfoPath = path.join(__dirname, 'superhero_info.json');
 const superheroPowersPath = path.join(__dirname, 'superhero_powers.json');
 const superheroListsPath = path.join(__dirname, 'superhero_lists.json');
+const dmcaFilePath = path.join(__dirname, 'dmca.json');
 
 let superheroLists = [];//all user created lists
 let superheroData = [];//all superhero data
@@ -688,11 +689,94 @@ app.get('/get-user-role-and-status', async (req, res) => {
     }
 });
 
+app.post('/save-dmca-requests', async (req, res) => {
+    const {dateRequestReceived, dateNoticeSent, dateDisputeReceived, notes, status } = req.body;
+
+    const newDispute = {
+        id: generateRandomId(),
+        dateRequestReceived,
+        dateNoticeSent,
+        dateDisputeReceived,
+        notes,
+        status,
+    };
+
+    fs.readFile(dmcaFilePath, 'utf8', (readErr, dmcaData) => {
+        if (readErr) {
+            console.error('Error reading DMCA file:', readErr);
+            res.status(500).json({ error: 'Internal Server Error' });
+            return;
+        }
+
+        try {
+            const dmcaDisputes = dmcaData ? JSON.parse(dmcaData) : [];
+            dmcaDisputes.push(newDispute);
+
+            fs.writeFile(dmcaFilePath, JSON.stringify(dmcaDisputes, null, 2), (writeErr) => {
+                if (writeErr) {
+                    console.error('Error writing DMCA file:', writeErr);
+                    res.status(500).json({ error: 'Internal Server Error' });
+                } else {
+                    res.status(200).json({ message: 'DMCA dispute saved successfully' });
+                }
+            });
+        } catch (parseError) {
+            console.error('Error parsing DMCA data:', parseError);
+            res.status(500).json({ error: 'Internal Server Error' });
+        }
+    });
+});
+
+app.get('/get-dmca-requests', async (req, res) => {
+    // Read existing DMCA disputes from file
+    fs.readFile(dmcaFilePath, 'utf8', (readErr, dmcaData) => {
+        if (readErr) {
+            console.error('Error reading DMCA file:', readErr);
+            res.status(500).json({ error: 'Internal Server Error' });
+            return;
+        }
+
+        try {
+            const dmcaDisputes = dmcaData ? JSON.parse(dmcaData) : [];
+
+            res.status(200).json(dmcaDisputes);
+        } catch (parseError) {
+            console.error('Error parsing DMCA data:', parseError);
+            res.status(500).json({ error: 'Internal Server Error' });
+        }
+    });
+});
+
+app.delete('/delete-dmca-request/:id', async (req, res) => {
+    const disputeIdToDelete = req.params.id;
 
 
+    fs.readFile(dmcaFilePath, 'utf8', (readErr, dmcaData) => {
+        if (readErr) {
+            console.error('Error reading DMCA file:', readErr);
+            res.status(500).json({ error: 'Internal Server Error' });
+            return;
+        }
 
+        try {
+            let dmcaDisputes = dmcaData ? JSON.parse(dmcaData) : [];
 
+            dmcaDisputes = dmcaDisputes.filter((dispute) => dispute.id !== disputeIdToDelete);
 
+            fs.writeFile(dmcaFilePath, JSON.stringify(dmcaDisputes, null, 2), (writeErr) => {
+                if (writeErr) {
+                    console.error('Error writing DMCA file:', writeErr);
+                    res.status(500).json({ error: 'Internal Server Error' });
+                } else {
+                    res.status(200).json({ message: 'DMCA dispute deleted successfully' });
+                }
+            });
+        } catch (parseError) {
+            console.error('Error parsing DMCA data:', parseError);
+            res.status(500).json({ error: 'Internal Server Error' });
+        }
+    });
+});
 
 //port listen message
 app.listen(port, () => {
